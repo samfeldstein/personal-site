@@ -10,5 +10,15 @@
   "started": {
     "notebook-astro": "2024-10"
   },
+  "sites": [
+    "postoley-dance-ensemble-sample",
+    "presswork-web-co",
+    "shelf-talkers",
+    "notebook-astro",
+    "personal-site"
+  ],
+  "linkToRepo": [
+    "rss-feeds"
+  ],
   "notSkills": []
 }

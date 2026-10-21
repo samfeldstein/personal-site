@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { appendFileSync, cpSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { check, cssProblems, hostProblems, maskProblems, scriptProblems } from "../check.mjs";
+import { check, cssProblems, hostProblems, maskProblems, projectLinkProblems, scriptProblems } from "../check.mjs";
 import { sync } from "../sync.mjs";
 
 test("cssProblems accepts balanced CSS, including braces in strings and comments", () => {
@@ -207,4 +207,10 @@ test("sync is idempotent", () => {
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
+});
+
+test("projectLinkProblems flags GitHub Pages links in the projects block only", () => {
+  const html = '<a href="https://samfeldstein.github.io/x/">out</a><!-- projects --><li><a href="https://samfeldstein.github.io/rss-feeds/">a</a></li><li><a href="https://github.com/samfeldstein/x">b</a></li><!-- /projects -->';
+  assert.equal(projectLinkProblems(html).length, 1);
+  assert.deepEqual(projectLinkProblems(html.replace("samfeldstein.github.io/rss-feeds/", "example.com/")), []);
 });

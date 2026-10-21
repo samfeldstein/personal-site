@@ -194,6 +194,14 @@ export function scriptProblems(code) {
   return opens && closes ? [] : ["script isn't wrapped in a function that runs itself, e.g. (() => { ... })();"];
 }
 
+/** Project links must point at the repository, never at a GitHub Pages site (usually just a rendered list). */
+export function projectLinkProblems(html) {
+  const block = html.match(/<!-- projects -->([\s\S]*?)<!-- \/projects -->/)?.[1] ?? "";
+  return [...block.matchAll(/href="(https?:\/\/[^"]*)"/gi)]
+    .filter((m) => /^https?:\/\/[^/]*\.github\.io(?:[/:?#]|$)/i.test(m[1]))
+    .map((m) => `project link ${m[1]} is a GitHub Pages site; link to the GitHub repository instead (projects.json "linkToRepo")`);
+}
+
 /** Any absolute http(s) address in code must be on the allowed-hosts list (no third-party services). */
 export function hostProblems(text, allowed) {
   const problems = [];
@@ -346,7 +354,9 @@ export function check({ root, shared }) {
   }
   for (const page of pages) {
     const label = relative(root, page.file);
-    const html = readFileSync(page.file, "utf8").replace(/<!--[\s\S]*?-->/g, "");
+    const raw = readFileSync(page.file, "utf8");
+    for (const m of projectLinkProblems(raw)) fail(label, m);
+    const html = raw.replace(/<!--[\s\S]*?-->/g, "");
     for (const m of html.matchAll(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi)) {
       const attrs = parseAttrs(m[1]);
       if (attrs.src !== undefined) {

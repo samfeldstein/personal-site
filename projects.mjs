@@ -18,6 +18,10 @@
   between the <!-- projects --> markers in site/code/index.html, newest first.
   A repository's date is its GitHub creation month unless projects.json gives
   another under "started" (YYYY-MM), for projects older than their repository.
+  A repository's entry links to its GitHub homepage field when set, unless
+  projects.json lists it under "linkToRepo" (for sites that are only a
+  rendered list); one with a homepage that is in neither "sites" nor
+  "linkToRepo" gets a warning, so each link target is decided on purpose.
 
   It also checks the languages GitHub counts in each listed repository: any
   that makes up at least a fifth of one and is missing from the skills line on
@@ -108,6 +112,14 @@ export function displayName(name) {
       return word[0].toUpperCase() + word.slice(1);
     })
     .join(" ");
+}
+
+export function applyLinkToRepo(repos, linkToRepo = []) {
+  return repos.map((repo) => (linkToRepo.includes(repo?.name) ? { ...repo, homepage: null } : repo));
+}
+
+export function undecidedHomepages(repos, { linkToRepo = [], sites = [] } = {}) {
+  return repos.filter((repo) => /^https?:\/\/\S+$/i.test((repo.homepage ?? "").trim()) && !linkToRepo.includes(repo.name) && !sites.includes(repo.name));
 }
 
 export function repoLink(repo) {
@@ -229,6 +241,10 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   let repos;
   try {
     repos = filterRepos(applyStarted(file ? readRepos(file) : await fetchRepos(), config.started));
+    for (const repo of undecidedHomepages(repos.filter((r) => Object.hasOwn(names, r.name)), config)) {
+      console.warn(`projects: warning: ${repo.name} has a homepage (${repo.homepage}); list it under "sites" in projects.json to link to it, or under "linkToRepo" to link to the GitHub repository`);
+    }
+    repos = applyLinkToRepo(repos, config.linkToRepo);
   } catch (err) {
     console.error(`projects: warning: couldn't get the repositories (${err.message}); the page is unchanged`);
     process.exit(0);

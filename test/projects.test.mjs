@@ -5,7 +5,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { addSkills, applyStarted, displayName, filterRepos, missingSkills, skillsIn, inFont, splitApproved, formatDate, renderEntries, renderEntry, replaceBlock, repoLink } from "../projects.mjs";
+import { addSkills, applyLinkToRepo, applyStarted, undecidedHomepages, displayName, filterRepos, missingSkills, skillsIn, inFont, splitApproved, formatDate, renderEntries, renderEntry, replaceBlock, repoLink } from "../projects.mjs";
 
 const script = fileURLToPath(new URL("../projects.mjs", import.meta.url));
 
@@ -237,4 +237,15 @@ test("addSkills adds before a closing Claude, or at the end", () => {
   assert.equal(addSkills(page("HTML, CSS, Claude"), ["Python", "Vue"]), page("HTML, CSS, Python, Vue, Claude"));
   assert.equal(addSkills(page("HTML, CSS"), ["Python"]), page("HTML, CSS, Python"));
   assert.equal(addSkills(page("HTML"), []), page("HTML"));
+});
+
+test("applyLinkToRepo drops the homepage of listed repositories only", () => {
+  const out = applyLinkToRepo([repo({ name: "a", homepage: "https://a.example/" }), repo({ name: "b", homepage: "https://b.example/" })], ["a"]);
+  assert.equal(repoLink(out[0]), "https://github.com/samfeldstein/thing");
+  assert.equal(repoLink(out[1]), "https://b.example/");
+});
+
+test("undecidedHomepages finds homepages in neither sites nor linkToRepo", () => {
+  const repos = [repo({ name: "a", homepage: "https://a.example/" }), repo({ name: "b", homepage: "https://b.example/" }), repo({ name: "c", homepage: "https://c.example/" }), repo({ name: "d", homepage: "" })];
+  assert.deepEqual(undecidedHomepages(repos, { sites: ["a"], linkToRepo: ["b"] }).map((r) => r.name), ["c"]);
 });
