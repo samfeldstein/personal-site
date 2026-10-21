@@ -22,13 +22,13 @@ The site ran on Astro until October 2026. I rebuilt it as plain files, the same 
 
 ### Shared parts
 
-The deployed folder is `site/`, and each page is a plain HTML file. Anything that appears on more than one page lives once in `shared/`: the head tags, the running head, the epigraph and colophon, the Lighthouse scores, the copyright line, and the stylesheets. [sync.mjs](sync.mjs) writes these into every page between marker comments and inlines each page’s CSS. It also adds a content hash to script links, so scripts can be cached for good, and writes the sitemaps.
+The deployed folder is `site/`, and each page is a plain HTML file. Anything that appears on more than one page lives once in `shared/`: the head tags, the running head, the epigraph and colophon, the Lighthouse scores, the copyright line, and the stylesheets. [scripts/sync.mjs](scripts/sync.mjs) writes these into every page between marker comments and inlines each page’s CSS. It also adds a content hash to script links, so scripts can be cached for good, and writes the sitemaps.
 
 Each page starts with a small JSON comment giving its title, description, stylesheets, and the fonts to preload. The shared book styles are in [shared/css/book.css](shared/css/book.css), and a page gets its own stylesheet only when it needs one.
 
 ### Checks
 
-[check.mjs](check.mjs) fails the build when the site has drifted or something is broken. It checks that:
+[scripts/check.mjs](scripts/check.mjs) fails the build when the site has drifted or something is broken. It checks that:
 
 - the shared parts and sitemaps are up to date;
 - every page has one `<h1>`, one `<main>`, a title and a description, and every image has alt text;
@@ -41,11 +41,11 @@ The tests in `test/` plant bugs on purpose to prove the checks catch them.
 
 ### Projects from GitHub
 
-The Code page lists my public GitHub repositories. [projects.mjs](projects.mjs) fetches them on every deploy and writes the list, newest first. Before a new repository appears, I approve its display name in [projects.json](projects.json). Until then, the script reports it with a suggested name, and the page goes on without it. A project older than its repository gets its real start month in `projects.json`. The script also flags any language that makes up a fifth or more of a repository but is missing from the skills line and adds it, asking me first when I run it myself. I put it in order by hand. If GitHub can’t be reached, the list stays as it was, so a deploy never fails or goes blank because of it.
+The Code page lists my public GitHub repositories. [scripts/projects.mjs](scripts/projects.mjs) fetches them when I run it on my computer and writes the list, newest first; I commit the result, and Cloudflare never runs it. Before a new repository appears, I approve its display name in [projects.json](scripts/projects.json). Until then, the script reports it with a suggested name, and the page goes on without it. A project older than its repository gets its real start month in `scripts/projects.json`. The script also flags any language that makes up a fifth or more of a repository but is missing from the skills line and adds it, asking me first. I put it in order by hand. If GitHub can’t be reached, the list stays as it was.
 
 ### Photo gallery
 
-The Photography page is built from whatever images are in `photos/`. [photos.mjs](photos.mjs) reads each photo’s title, description, date, and location with ExifTool, writes WebP copies at several widths into `site/img/photos/`, and rewrites the gallery, newest first. The description becomes the alt text, so I caption a photo once in my editor and it carries through to the site. The location (city, state, country) shows when a photo has one, and the script lists the photos that don’t.
+The Photography page is built from whatever images are in `photos/`. [scripts/photos.mjs](scripts/photos.mjs) reads each photo’s title, description, date, and location with ExifTool, writes WebP copies at several widths into `site/img/photos/`, and rewrites the gallery, newest first. The description becomes the alt text, so I caption a photo once in my editor and it carries through to the site. The location (city, state, country) shows when a photo has one, and the script lists the photos that don’t.
 
 The gallery is a justified mosaic: each row fills the width at one height, and every photo keeps its own shape. Hovering or focusing a photo shows its title, location, and date. Clicking opens it full screen in a `<dialog>`, with arrow keys to move through photos and Escape to close. Without JavaScript, each photo is still a plain link to the full image.
 
@@ -55,11 +55,11 @@ The epigraph shows a random quote from my collection of lines from books, comics
 
 ### Lighthouse scores
 
-The colophon shows the site’s own Lighthouse scores. I run Lighthouse (mobile) and pass the numbers to [lighthouse.mjs](lighthouse.mjs), which writes them into `shared/lighthouse.html`. Without numbers, it calls the PageSpeed Insights API instead.
+The colophon shows the site’s own Lighthouse scores. I run Lighthouse (mobile) and pass the numbers to [scripts/lighthouse.mjs](scripts/lighthouse.mjs), which writes them into `shared/lighthouse.html`. Without numbers, it calls the PageSpeed Insights API instead.
 
 ### Hosting
 
-- **Build.** Cloudflare runs `npm run build`: the project list, then sync in check mode, then `check.mjs`. A page that has drifted never deploys.
+- **Build.** Cloudflare runs `npm run build`: sync in check mode, then `scripts/check.mjs`. A page that has drifted never deploys.
 - **Prefetch.** Speculation Rules prefetch internal links in Chromium, and a small script adds `<link rel="prefetch">` elsewhere. Cross-document view transitions smooth out page changes.
 - **Caching.** [site/_headers](site/_headers) caches fonts and scripts for good, and images for a shorter time.
 - **Old URLs.** [site/_redirects](site/_redirects) keeps links to earlier versions of the site working.
@@ -67,15 +67,14 @@ The colophon shows the site’s own Lighthouse scores. I run Lighthouse (mobile)
 ## Project structure
 
 ```text
-├── sync.mjs            Writes shared parts into pages, inlines CSS, writes sitemaps
-├── check.mjs           Fails on drift, broken links, uncovered characters, size
-├── projects.mjs        Writes the Code page's project list from GitHub
-├── projects.json       Approved project names
-├── photos.mjs          Builds the gallery from photos/
-├── lighthouse.mjs      Writes the Lighthouse scores
+├── scripts/            sync.mjs (writes shared parts into pages, inlines CSS, writes sitemaps),
+│                       check.mjs (fails on drift, broken links, uncovered characters, size),
+│                       projects.mjs + projects.json (the Code page's project list and approved names),
+│                       photos.mjs (builds the gallery from photos/), lighthouse.mjs (writes the scores)
 ├── test/               Tests for the scripts and checks
 ├── photos/             Source photos (not deployed)
 ├── shared/             Head, running head, end matter, scores, copyright, facts.json, css/
+├── docs/               Handoff, plan, report, ISSUES.md, ROADMAP.md, backup script
 ├── _archive/           Pages taken off the site but kept (résumés)
 └── site/               Deployed as is
     ├── index.html, published-writing/, photos/, code/, 404.html
@@ -97,19 +96,19 @@ Pages use root-relative paths, so they need a server, not `file://`.
 Before committing:
 
 ```bash
-node sync.mjs && node check.mjs && node --test test/*.test.mjs
+node scripts/sync.mjs && node scripts/check.mjs && node --test test/*.test.mjs
 ```
 
 After adding, removing, or re-captioning photos:
 
 ```bash
-node photos.mjs
+node scripts/photos.mjs
 ```
 
 To refresh the project list, and see any new repositories waiting for a name:
 
 ```bash
-node projects.mjs
+node scripts/projects.mjs
 ```
 
 ## Reuse

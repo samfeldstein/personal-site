@@ -14,29 +14,29 @@ Known problems and small cleanups found during a site review on 2026-10-13, upda
 ## Cleanup
 
 - [x] **Unused components, dependencies, and jampack config.** (Fixed in the plain HTML rebuild: none of them were ported.)
-- [x] **Gallery sort comment is backwards.** (Fixed in the plain HTML rebuild: the comment is gone; [photos.mjs](photos.mjs) sorts newest first.)
+- [x] **Gallery sort comment is backwards.** (Fixed in the plain HTML rebuild: the comment is gone; [scripts/photos.mjs](../scripts/photos.mjs) sorts newest first.)
 - [x] **Old OSINT log page.** (Fixed in the plain HTML rebuild: not ported.)
 - [x] **Committed image cache and slow builds.** `node_modules/.astro/` (about 1,450 processed gallery images) was committed. (Fixed in the plain HTML rebuild: removed, and builds no longer process images. Git history is still about 480 MB; rewriting it is optional.)
 - [x] **Unused Bridgy Fed redirects.** (Fixed in the plain HTML rebuild: removed.)
-- [ ] **Unreferenced résumé PDFs.** No résumé page links the customer-success, page-designer, support-specialist, writer-developer, or writer-editor PDFs in [site/static/resumes/](site/static/resumes/). They’re still public at their URLs. Keep them if you’ve sent those links out; otherwise remove them.
-- [ ] **Old email address in résumé PDFs.** The site uses sam@samfeldstein.com, but every PDF in [site/static/resumes/](site/static/resumes/) shows an older address (samfeldstein@pm.me, or sam@samfeldstein.xyz in the support-specialist PDF). Re-export the ones you still use and delete the rest.
-- [x] **Decide which résumé variants to keep.** (Résumé pages disabled on 2026-10-17 and kept in [_archive/resumes/](_archive/resumes/); see [ROADMAP.md](ROADMAP.md).)
+- [ ] **Unreferenced résumé PDFs.** No résumé page links the customer-success, page-designer, support-specialist, writer-developer, or writer-editor PDFs in [site/static/resumes/](../site/static/resumes/). They’re still public at their URLs. Keep them if you’ve sent those links out; otherwise remove them.
+- [ ] **Old email address in résumé PDFs.** The site uses sam@samfeldstein.com, but every PDF in [site/static/resumes/](../site/static/resumes/) shows an older address (samfeldstein@pm.me, or sam@samfeldstein.xyz in the support-specialist PDF). Re-export the ones you still use and delete the rest.
+- [x] **Decide which résumé variants to keep.** (Résumé pages disabled on 2026-10-17 and kept in [_archive/resumes/](../_archive/resumes/); see [ROADMAP.md](ROADMAP.md).)
 - [x] **Web manifest colors.** (Cloth and paper colors since the book redesign.)
 - [x] **Fallback font name mismatch.** (Gone with the book redesign: Noto Serif and its fallback are no longer used.)
 
 ## Content
 
-- [ ] **Typo in the site description.** "Sam Feldstein is human being based in Denver, CO." is missing "a". It’s in `site.description` in [shared/facts.json](shared/facts.json) and in the home page comment in [site/index.html](site/index.html). Fix both, then run `node sync.mjs`.
-- [ ] **Typo on Published Writing.** The description in the page comment of [site/published-writing/index.html](site/published-writing/index.html) reads "My publish writing". Fix it, then run `node sync.mjs`.
-- [x] **Home footer wording.** ("Powered by Astro" replaced with a colophon on home and Code, in [shared/credit.html](shared/credit.html).)
-- [ ] **Photo locations.** No photo has a location yet. Add City, State and Country (IPTC fields) to each photo in `photos/`, then run `node photos.mjs`; it lists the ones still missing and shows locations on the gallery as they're added.
+- [x] **Typo in the site description.** "Sam Feldstein is human being based in Denver, CO." is missing "a". It’s in `site.description` in [shared/facts.json](../shared/facts.json) and in the home page comment in [site/index.html](../site/index.html). Fix both, then run `node scripts/sync.mjs`.
+- [x] **Typo on Published Writing.** The description in the page comment of [site/published-writing/index.html](../site/published-writing/index.html) reads "My publish writing". Fix it, then run `node scripts/sync.mjs`.
+- [x] **Home footer wording.** ("Powered by Astro" replaced with a colophon on home and Code, in [shared/credit.html](../shared/credit.html).)
+- [ ] **Photo locations.** No photo has a location yet. Add City, State and Country (IPTC fields) to each photo in `photos/`, then run `node scripts/photos.mjs`; it lists the ones still missing and shows locations on the gallery as they're added.
 - [ ] **Gallery image URLs changed.** Photos moved from `/_astro/*` to `/img/photos/*`. Image search will reindex them; old image links won’t resolve.
-- [x] **Review the Code page portfolio.** (The list is now generated from public GitHub repositories by `projects.mjs`, with names approved in `projects.json`.)
+- [x] **Review the Code page portfolio.** (The list is now generated from public GitHub repositories by `scripts/projects.mjs`, with names approved in `scripts/projects.json`.)
 
 ## From the October 2026 audits (owner)
 
 - [ ] **GitHub repo description.** personal-site says "built with Astro"; update it on GitHub (the lowercase "rss" in rss-feeds stays). (Renamed to personal-site, shown as "Personal Site".)
-- [ ] **Photo alt-text typos** (EXIF Description, then `node photos.mjs`): "it's head", "A group a people", "ocototillo with a mountains", "Robert's Western world", "Arches National Monument" (a National Park); two Barksdale's photos share the same alt text.
+- [ ] **Photo alt-text typos** (EXIF Description, then `node scripts/photos.mjs`): "it's head", "A group a people", "ocototillo with a mountains", "Robert's Western world", "Arches National Monument" (a National Park); two Barksdale's photos share the same alt text.
 - [ ] **Presswork's structured data** names its founder as a bare Person; link it to `https://samfeldstein.xyz/#person` in the presswork repo.
 - [x] **Favicons.** (Gilt "SF" in Cormorant Garamond on the cover cloth, 2026-10-17.)
 - [ ] **Cloudflare dashboard:** keep Web Analytics on (cookieless; Presswork kept it too) and Bot Fight Mode off (its injected script dropped Presswork's Lighthouse Best Practices to 81). The colophon now says only "No cookies."

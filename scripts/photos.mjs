@@ -5,14 +5,13 @@
   Run it after adding, removing or re-captioning a photo:
 
     npm install          (once; installs sharp and exiftool-vendored)
-    node photos.mjs
+    node scripts/photos.mjs
 
   For each photo it reads the title, description (the alt text), creation
   date and location (City, State, Country; shown when present) with ExifTool, writes WebP copies at the widths below into
   site/img/photos/ (only the ones that don't exist yet), deletes copies of
   photos that are gone, and rewrites the gallery between the
-  <!-- gallery --> markers in site/photos/index.html, newest first, as
-  numbered plates.
+  <!-- gallery --> markers in site/photos/index.html, newest first.
 
   It lists the photos with no location at the end of each run.
 
@@ -20,15 +19,16 @@
   site/img/photos/<name>-*.webp first to regenerate them.
 */
 import { readdirSync, readFileSync, writeFileSync, existsSync, unlinkSync, mkdirSync } from "node:fs";
-import { join, parse, dirname } from "node:path";
+import { join, parse, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 import { ExifTool } from "exiftool-vendored";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const SOURCE = join(here, "photos");
-const OUT = join(here, "site/img/photos");
-const PAGE = join(here, "site/photos/index.html");
+const root = resolve(here, "..");
+const SOURCE = join(root, "photos");
+const OUT = join(root, "site/img/photos");
+const PAGE = join(root, "site/photos/index.html");
 const WIDTHS = [256, 480, 691, 936, 1150, 1382, 1640, 1850, 2048];
 const ROW = { small: 160, wide: 320, vw: 22, from: 728, to: 1455, stretch: 1.3 };
 const sizes = (ratio) => {

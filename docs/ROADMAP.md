@@ -23,13 +23,13 @@ The site deploys about 81 MB of gallery WebPs (down from about 200 MB under Astr
 What is still large is the git repo, which every Cloudflare build clones: about 480 MB of history, mostly the old committed Astro image cache, plus 247 MB of source JPGs in `photos/`. Options, both the owner's call:
 
 - Rewrite history to drop `node_modules/.astro/` (needs a force push; every other clone must be re-cloned).
-- Keep the source JPGs outside the repo and point `photos.mjs` at that folder.
+- Keep the source JPGs outside the repo and point `scripts/photos.mjs` at that folder.
 
 ## Make samfeldstein.com the primary domain
 
 The site is canonical at samfeldstein.xyz; samfeldstein.com should take over, with .xyz redirecting to it.
 
-- In the repo: `url` and `allowedHosts` in `shared/facts.json` (sync then rewrites canonicals, Open Graph URLs, the JSON-LD `@id`s and the sitemaps), `site/robots.txt`, the test host in `test/check.test.mjs`, the `User-Agent` in `projects.mjs`, `README.md` and `CLAUDE.md`.
+- In the repo: `url` and `allowedHosts` in `shared/facts.json` (sync then rewrites canonicals, Open Graph URLs, the JSON-LD `@id`s and the sitemaps), `site/robots.txt`, the test host in `test/check.test.mjs`, the `User-Agent` in `scripts/projects.mjs`, `README.md` and `CLAUDE.md`.
 - On Cloudflare: add samfeldstein.com (and `www`) as a custom domain on the Worker, and a 301 redirect from every samfeldstein.xyz URL to the same path on .com (a Redirect Rule; `_redirects` can't match on host). Keep the .xyz registration so old links keep working.
 - Afterwards: add the .com property in Search Console and submit the sitemap, update the Presswork structured-data link (see handoff), and update the GitHub repo homepage.
 - The subdomains (`notes`, `cookbook`, `shelftalkers`) move to .com too, each with its own .xyz redirect. They're separate projects, so each repo needs its own domain change; here, update the RSS link in `shared/head.html`, the contents links, the `_redirects` targets and `notes.` in `allowedHosts`. Project links on the Code page come from each repo's GitHub homepage, so update those on GitHub.

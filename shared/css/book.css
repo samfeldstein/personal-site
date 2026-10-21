@@ -295,9 +295,9 @@ h3 {
   color: var(--ink-faded);
 }
 
-a[href^="http"]:not(.toc a, .works a, .work)::after,
-.toc a[href^="http"] > span::after,
-.works a[href^="http"] .work-source::after {
+a[href^="http"]:not(.toc a, .works a, .work, [href^="https://samfeldstein.xyz"])::after,
+.toc a[href^="http"]:not([href^="https://samfeldstein.xyz"]) > span::after,
+.works a[href^="http"]:not([href^="https://samfeldstein.xyz"]) .work-source::after {
   content: "\2197" / ", external";
   display: inline-block;
   margin-left: 0.2em;

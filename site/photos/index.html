@@ -409,9 +409,9 @@ h3 {
   color: var(--ink-faded);
 }
 
-a[href^="http"]:not(.toc a, .works a, .work)::after,
-.toc a[href^="http"] > span::after,
-.works a[href^="http"] .work-source::after {
+a[href^="http"]:not(.toc a, .works a, .work, [href^="https://samfeldstein.xyz"])::after,
+.toc a[href^="http"]:not([href^="https://samfeldstein.xyz"]) > span::after,
+.works a[href^="http"]:not([href^="https://samfeldstein.xyz"]) .work-source::after {
   content: "\2197" / ", external";
   display: inline-block;
   margin-left: 0.2em;
@@ -503,11 +503,6 @@ a[href^="mailto:"]:not(.toc a)::after,
 .works a:focus-visible .work-title::after {
   border-bottom-color: currentColor;
 }
-:root {
-  --plate: light-dark(#efe8d6, #27221b);
-  --plate-mark: light-dark(#b9ab8c, #4a4135);
-}
-
 .gallery-page {
   max-width: 90rem;
   margin: 0 auto;
@@ -851,7 +846,7 @@ a[href^="mailto:"]:not(.toc a)::after,
 <!-- /shared:copyright -->
   </div>
 </footer>
-<script type="module" src="/js/quote.js?v=e3c61ced"></script>
+<script type="module" src="/js/quote.js?v=9ee267ba"></script>
 <!-- /shared:endmatter -->
   <dialog class="lightbox" closedby="any" tabindex="-1" aria-labelledby="lightbox-title">
     <form method="dialog"><button class="lightbox-close" aria-label="Close" autofocus><span aria-hidden="true">×</span></button></form>

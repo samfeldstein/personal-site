@@ -33,7 +33,7 @@ const quotes = [
     quote:
       `He supposed that the intent of the Gospels was to teach people, among other things, to be merciful, even to the lowest of the low. But the Gospels actually taught this:
       
-      Before you kill somebody, make absolutely sure he isn't well connected.
+      Before you kill somebody, make absolutely sure he isn’t well connected.
       
       So it goes.`,
     speaker: "Kurt Vonnegut",
@@ -240,7 +240,7 @@ const quotes = [
     speaker: "Albert Camus"
   },
   {
-    quote: `unless being still would<br>drive you to madness or<br>suicide or murder,< br > don’t do it.`,
+    quote: `unless being still would<br>drive you to madness or<br>suicide or murder,<br> don’t do it.`,
     speaker: "Charles Bukowski",
     work: "so you want to be a writer?",
     medium: "poem"
@@ -290,7 +290,7 @@ const quotes = [
     work: "The Searchers"
   },
   {
-    quote: `We rip out so much of ourselves to be cured of things faster that we go bankrupt by the age of thirty and have less to offer each time we start with someone new.Right now there's sorrow, pain. Don't kill it, and with it, all the joy you've felt.`,
+    quote: `We rip out so much of ourselves to be cured of things faster that we go bankrupt by the age of thirty and have less to offer each time we start with someone new. Right now there’s sorrow, pain. Don’t kill it, and with it, all the joy you’ve felt.`,
     speaker: "Mr. Perlman",
     work: "Call Me By Your Name",
   },
@@ -361,7 +361,7 @@ const quotes = [
     work: "The Long Goodbye"
   },
   {
-    quote: "Get busy livin, or get busy dyin.",
+    quote: "Get busy livin’, or get busy dyin’.",
     speaker: "Red",
     work: "Rita Hayworth and the Shawshank Redemption"
   },

@@ -1,8 +1,3 @@
-:root {
-  --plate: light-dark(#efe8d6, #27221b);
-  --plate-mark: light-dark(#b9ab8c, #4a4135);
-}
-
 .gallery-page {
   max-width: 90rem;
   margin: 0 auto;

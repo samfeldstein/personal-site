@@ -5,7 +5,7 @@
 
   Each page has marker comments:
 
-    <!-- page: {"title": "Code", "description": "...", "css": ["code"], "fonts": ["victor-mono"]} -->
+    <!-- page: {"title": "Code", "description": "...", "css": ["code"], "fonts": ["cormorant-garamond-2"]} -->
     <!-- shared:head --> ... <!-- /shared:head -->
     <!-- shared:skip-link --> ... <!-- /shared:skip-link -->
 
@@ -20,11 +20,12 @@
 
   The page comment takes: title (the site name is added), description,
   css (files in shared/css/, inlined in a <style> after base.css, without
-  comments), fonts (files in site/static/fonts/ to preload), noindex.
+  comments), fonts (files in site/static/fonts/ to preload), typefaces (named in
+  the colophon), ogType (default "website"), noindex.
 
   Usage:
-    node sync.mjs            write changes
-    node sync.mjs --check    write nothing; exit 1 if anything is out of date
+    node scripts/sync.mjs            write changes
+    node scripts/sync.mjs --check    write nothing; exit 1 if anything is out of date
 */
 import { createHash } from "node:crypto";
 import { readFileSync, writeFileSync, readdirSync, statSync, existsSync } from "node:fs";
@@ -32,6 +33,7 @@ import { join, relative, resolve, dirname, sep } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const here = dirname(fileURLToPath(import.meta.url));
+const root = resolve(here, "..");
 const REQUIRED = ["head", "skip-link", "endmatter"];
 const OPTIONAL = ["credit", "lighthouse", "copyright", "running-head"];
 
@@ -188,8 +190,8 @@ export function sync({ root, shared, write = true }) {
 if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) {
   const dry = process.argv.includes("--check");
   try {
-    const { changed } = sync({ root: resolve(here, "site"), shared: resolve(here, "shared"), write: !dry });
-    for (const f of changed) console.log(`${dry ? "out of date" : "updated"}: ${relative(here, f)}`);
+    const { changed } = sync({ root: resolve(root, "site"), shared: resolve(root, "shared"), write: !dry });
+    for (const f of changed) console.log(`${dry ? "out of date" : "updated"}: ${relative(root, f)}`);
     if (!changed.length) console.log("sync: everything is up to date");
     if (dry && changed.length) process.exit(1);
   } catch (e) {

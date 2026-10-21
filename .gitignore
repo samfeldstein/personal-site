@@ -1,4 +1,4 @@
-# dependencies (only used by photos.mjs and wrangler)
+# dependencies (only used by scripts/photos.mjs and wrangler)
 node_modules/
 
 # baseline build of the old Astro site, for comparison

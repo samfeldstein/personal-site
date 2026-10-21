@@ -7,15 +7,15 @@
     "node": ">=22"
   },
   "scripts": {
-    "sync": "node sync.mjs",
-    "check": "node check.mjs",
+    "sync": "node scripts/sync.mjs",
+    "check": "node scripts/check.mjs",
     "test": "node --test test/*.test.mjs",
-    "build": "node projects.mjs && node sync.mjs --check && node check.mjs",
-    "photos": "node photos.mjs",
-    "lighthouse": "node lighthouse.mjs",
+    "build": "node scripts/sync.mjs --check && node scripts/check.mjs",
+    "photos": "node scripts/photos.mjs",
+    "lighthouse": "node scripts/lighthouse.mjs",
     "dev": "wrangler dev",
     "dev:phone": "wrangler dev --ip 0.0.0.0",
-    "projects": "node projects.mjs"
+    "projects": "node scripts/projects.mjs"
   },
   "devDependencies": {
     "exiftool-vendored": "^36.0.0",

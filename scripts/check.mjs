@@ -28,7 +28,7 @@
     - each page's gzipped HTML (with its inline CSS) + linked JS stays within its budget in
       facts.json "sizeBudgetKB" (a "default" and optional per-path overrides)
 
-  Usage: node check.mjs [--root site] [--shared shared]
+  Usage: node scripts/check.mjs [--root site] [--shared shared]
 */
 import { readFileSync, existsSync, readdirSync } from "node:fs";
 import { join, relative, resolve, dirname } from "node:path";
@@ -37,6 +37,7 @@ import { gzipSync } from "node:zlib";
 import { sync } from "./sync.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
+const root = resolve(here, "..");
 
 const ENTITIES = {
   amp: "&", lt: "<", gt: ">", quot: '"', apos: "'", nbsp: " ", copy: "©", reg: "®",
@@ -45,12 +46,12 @@ const ENTITIES = {
   thinsp: " ", deg: "°",
 };
 
-/** Remove comments, and the insides of <script> and <style>; keep JSON-LD for the price check. */
+/** Remove comments, and the insides of <script> and <style>; keep the JSON data scripts (JSON-LD, speculation rules) so they can be parsed. */
 function simplify(html) {
   const ld = [];
   let s = html.replace(/<!--[\s\S]*?-->/g, "");
   s = s.replace(/<script\b([^>]*)>([\s\S]*?)<\/script>/gi, (_, attrs, body) => {
-    if (/application\/ld\+json/.test(attrs)) ld.push(body);
+    if (/application\/(?:ld\+json|speculationrules)/.test(attrs)) ld.push(body);
     return `<script${attrs}></script>`;
   });
   const styles = [];
@@ -202,6 +203,12 @@ export function projectLinkProblems(html) {
     .map((m) => `project link ${m[1]} is a GitHub Pages site; link to the GitHub repository instead (projects.json "linkToRepo")`);
 }
 
+/** Absolute http(s) addresses in url() and @import of a stylesheet must be on the allowed-hosts list too. */
+export function cssHostProblems(css, allowed) {
+  const urls = [...css.replace(/\/\*[\s\S]*?\*\//g, "").matchAll(/url\(\s*['"]?([^'")]+)['"]?\s*\)|@import\s+['"]([^'"]+)['"]/g)].map((m) => m[1] ?? m[2]);
+  return urls.flatMap((u) => (/^(?:https?:)?\/\//i.test(u.trim()) ? hostProblems(u, allowed) : []));
+}
+
 /** Any absolute http(s) address in code must be on the allowed-hosts list (no third-party services). */
 export function hostProblems(text, allowed) {
   const problems = [];
@@ -224,7 +231,7 @@ export function check({ root, shared }) {
   } catch (e) {
     return [`sync: ${e.message}`];
   }
-  for (const f of result.changed) fail(relative(root, f), "out of date; run `node sync.mjs`");
+  for (const f of result.changed) fail(relative(root, f), "out of date; run `node scripts/sync.mjs`");
   const { facts, pages } = result;
 
   const exists = (p) => existsSync(join(root, p));
@@ -314,6 +321,14 @@ export function check({ root, shared }) {
     }
 
     for (const body of styles) for (const problem of [...cssProblems(body), ...maskProblems(body)]) fail(label, `inline <style>: ${problem}`);
+    for (const body of styles) for (const problem of cssHostProblems(body, facts.allowedHosts ?? [])) fail(label, `inline <style>: ${problem}`);
+    for (const body of ld) {
+      try {
+        JSON.parse(body);
+      } catch (err) {
+        fail(label, `a JSON <script> (JSON-LD or speculation rules) isn't valid JSON: ${err.message}`);
+      }
+    }
 
     const ranges = fontRanges(styles.join("\n"));
     const covered = (cp) => ranges.some(([a, b]) => cp >= a && cp <= b);
@@ -333,6 +348,7 @@ export function check({ root, shared }) {
       const label = `css/${name}`;
       const raw = readFileSync(join(cssDir, name), "utf8");
       for (const problem of [...cssProblems(raw), ...maskProblems(raw)]) fail(label, problem);
+      for (const problem of cssHostProblems(raw, facts.allowedHosts ?? [])) fail(label, problem);
       const css = raw.replace(/\/\*[\s\S]*?\*\//g, "");
       for (const m of css.matchAll(/url\(\s*['"]?([^'")]+)['"]?\s*\)|@import\s+['"]([^'"]+)['"]/g)) {
         const u = m[1] ?? m[2];
@@ -350,6 +366,16 @@ export function check({ root, shared }) {
     for (const name of readdirSync(jsDir).filter((n) => n.endsWith(".js"))) {
       const code = readFileSync(join(jsDir, name), "utf8");
       scriptLabel(`js/${name}`, hostProblems(code, allowedHosts));
+      const bookCss = join(shared, "css/book.css");
+      if (existsSync(bookCss)) {
+        const jsRanges = fontRanges(readFileSync(bookCss, "utf8"));
+        const jsBad = new Set();
+        for (const ch of code) {
+          const cp = ch.codePointAt(0);
+          if (cp > 0x7e && !jsRanges.some(([a, b]) => cp >= a && cp <= b) && !(facts.allowedChars ?? []).includes(ch)) jsBad.add(`${ch} (U+${cp.toString(16).toUpperCase().padStart(4, "0")})`);
+        }
+        if (jsBad.size) fail(`js/${name}`, `characters outside the shipped fonts: ${[...jsBad].join(", ")}`);
+      }
     }
   }
   for (const page of pages) {
@@ -398,8 +424,8 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   const args = process.argv.slice(2);
   const opt = (name, fallback) => (args.includes(name) ? args[args.indexOf(name) + 1] : fallback);
   const problems = check({
-    root: resolve(here, opt("--root", "site")),
-    shared: resolve(here, opt("--shared", "shared")),
+    root: resolve(root, opt("--root", "site")),
+    shared: resolve(root, opt("--shared", "shared")),
   });
   if (problems.length) {
     console.error(problems.map((p) => `✗ ${p}`).join("\n"));

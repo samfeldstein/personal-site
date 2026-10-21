@@ -1,0 +1,59 @@
+name: Update Code page projects
+
+on:
+  schedule:
+    - cron: "17 15 1 * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  projects:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+      - name: Run projects.mjs
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: node scripts/projects.mjs --yes | tee "$RUNNER_TEMP/projects.txt"
+      - name: Check the site
+        run: node scripts/sync.mjs --check && node scripts/check.mjs
+      - name: Open a pull request
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          waiting=$(sed -n '/waiting for your approval/,$p' "$RUNNER_TEMP/projects.txt")
+          if git diff --quiet && [ -z "$waiting" ]; then
+            echo "Nothing to update."
+            exit 0
+          fi
+          {
+            echo "Monthly check of the public GitHub repositories."
+            echo
+            echo "Changes to the Code page are in this pull request; merging it deploys them."
+            if [ -n "$waiting" ]; then
+              echo
+              echo "Repositories waiting for an approved name (add them to \`scripts/projects.json\` or run \`node scripts/projects.mjs --approve\`):"
+              echo
+              echo '```'
+              echo "$waiting"
+              echo '```'
+            fi
+          } > "$RUNNER_TEMP/body.md"
+          if git diff --quiet; then
+            gh issue create --title "Repositories waiting for approval on the Code page" --body-file "$RUNNER_TEMP/body.md"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git switch -c projects-update
+          git commit -am "Update the Code page projects"
+          git push --force origin projects-update
+          if [ -z "$(gh pr list --head projects-update --json number --jq '.[].number')" ]; then
+            gh pr create --head projects-update --title "Update the Code page projects" --body-file "$RUNNER_TEMP/body.md"
+          fi

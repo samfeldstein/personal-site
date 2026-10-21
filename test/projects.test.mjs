@@ -5,9 +5,9 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { addSkills, applyLinkToRepo, applyStarted, undecidedHomepages, displayName, filterRepos, missingSkills, skillsIn, inFont, splitApproved, formatDate, renderEntries, renderEntry, replaceBlock, repoLink } from "../projects.mjs";
+import { addSkills, applyLinkToRepo, applyStarted, undecidedHomepages, displayName, filterRepos, missingSkills, skillsIn, inFont, splitApproved, formatDate, renderEntries, renderEntry, replaceBlock, repoLink } from "../scripts/projects.mjs";
 
-const script = fileURLToPath(new URL("../projects.mjs", import.meta.url));
+const script = fileURLToPath(new URL("../scripts/projects.mjs", import.meta.url));
 
 const repo = (over) => ({
   name: "thing",

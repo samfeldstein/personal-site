@@ -3,8 +3,8 @@ import assert from "node:assert/strict";
 import { appendFileSync, cpSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { check, cssProblems, hostProblems, maskProblems, projectLinkProblems, scriptProblems } from "../check.mjs";
-import { sync } from "../sync.mjs";
+import { check, cssHostProblems, cssProblems, hostProblems, maskProblems, projectLinkProblems, scriptProblems } from "../scripts/check.mjs";
+import { sync } from "../scripts/sync.mjs";
 
 test("cssProblems accepts balanced CSS, including braces in strings and comments", () => {
   assert.deepEqual(cssProblems('a{color:red}@media (min-width:1px){b{c:d}}\n/* } { */ i::before{content:"}"}'), []);
@@ -213,4 +213,27 @@ test("projectLinkProblems flags GitHub Pages links in the projects block only", 
   const html = '<a href="https://samfeldstein.github.io/x/">out</a><!-- projects --><li><a href="https://samfeldstein.github.io/rss-feeds/">a</a></li><li><a href="https://github.com/samfeldstein/x">b</a></li><!-- /projects -->';
   assert.equal(projectLinkProblems(html).length, 1);
   assert.deepEqual(projectLinkProblems(html.replace("samfeldstein.github.io/rss-feeds/", "example.com/")), []);
+});
+
+test("cssHostProblems flags third-party url() and @import but not local or data ones", () => {
+  const allowed = ["samfeldstein.xyz"];
+  assert.equal(cssHostProblems('@import url("https://fonts.googleapis.com/css");', allowed).length, 1);
+  assert.equal(cssHostProblems("a{background:url(//cdn.example.net/x.png)}", allowed).length, 1);
+  assert.deepEqual(cssHostProblems('a{background:url(/img/x.png)} b{background:url("data:image/png;base64,AA")} /* url(https://x.example/y) */', allowed), []);
+});
+
+test("check reports invalid JSON data scripts, third-party CSS, and uncovered characters in scripts", () => {
+  const dir = copyOfSite();
+  try {
+    appendFileSync(join(dir, "shared/css/base.css"), "\n@import url(https://cdn.example.net/x.css);\n");
+    appendFileSync(join(dir, "site/js/quote.js"), "\nconst x = \"\u{1F600}\";\n");
+    const page = join(dir, "site/code/index.html");
+    writeFileSync(page, readFileSync(page, "utf8").replace(/<main\b[^>]*>/, (open) => `${open}<script type="application/ld+json">{oops</script>`));
+    const problems = check({ root: join(dir, "site"), shared: join(dir, "shared") });
+    assert.ok(problems.some((p) => /cdn\.example\.net/.test(p)), problems.join("\n"));
+    assert.ok(problems.some((p) => /isn't valid JSON/.test(p)), problems.join("\n"));
+    assert.ok(problems.some((p) => /js\/quote\.js: characters outside the shipped fonts/.test(p)), problems.join("\n"));
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });

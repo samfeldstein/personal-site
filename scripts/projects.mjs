@@ -2,8 +2,8 @@
 /*
   projects.mjs: writes the list of GitHub repositories on /code/.
 
-    node projects.mjs             update the list, report repositories waiting for approval
-    node projects.mjs --approve   also approve the waiting ones under their suggested names
+    node scripts/projects.mjs             update the list, report repositories waiting for approval
+    node scripts/projects.mjs --approve   also approve the waiting ones under their suggested names
     --file repos.json             read the repositories from a file instead of GitHub
     --page path/to/index.html     write to another page
     --names path/to/names.json    use another approved-names file
@@ -26,8 +26,8 @@
   It also checks the languages GitHub counts in each listed repository: any
   that makes up at least a fifth of one and is missing from the skills line on
   the Code page is added to the line (before Claude, if it's last), unless
-  projects.json lists it under "notSkills". In a terminal it asks first; in a
-  build it adds it and says so. Move it where it belongs by hand.
+  projects.json lists it under "notSkills". It asks first, in a terminal; with
+  no terminal it only reports it, unless --yes is given. Move it where it belongs by hand.
 
   If GitHub can't be reached or no approved repositories remain, it prints a
   warning and exits 0 with the page unchanged, so a build never fails or
@@ -36,11 +36,12 @@
   passes. Then run sync, check and commit.
 */
 import { readFileSync, writeFileSync } from "node:fs";
-import { join, dirname } from "node:path";
+import { join, dirname, resolve } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 
 const here = dirname(fileURLToPath(import.meta.url));
-const PAGE = join(here, "site/code/index.html");
+const root = resolve(here, "..");
+const PAGE = join(root, "site/code/index.html");
 const NAMES_FILE = join(here, "projects.json");
 const API = "https://api.github.com/users/samfeldstein/repos?per_page=100&type=owner&sort=pushed";
 const PROFILE = "samfeldstein";
@@ -93,7 +94,8 @@ export function addSkills(html, add) {
 }
 
 async function confirm(question) {
-  if (!process.stdin.isTTY) return true;
+  if (process.argv.includes("--yes")) return true;
+  if (!process.stdin.isTTY) return false;
   const { createInterface } = await import("node:readline/promises");
   const rl = createInterface({ input: process.stdin, output: process.stdout });
   const answer = await rl.question(`${question} [Y/n] `);
@@ -133,7 +135,19 @@ export function formatDate(iso) {
   return { datetime: `${d.getUTCFullYear()}-${month}`, text: `${MONTHS[d.getUTCMonth()]} ${d.getUTCFullYear()}` };
 }
 
-const FONT_RANGES = [[0x20, 0x7e], [0xa0, 0xff], [0x131, 0x131], [0x152, 0x153], [0x2013, 0x2014], [0x2018, 0x201a], [0x201c, 0x201e], [0x2020, 0x2022], [0x2026, 0x2026], [0x2032, 0x2033], [0x2039, 0x203a], [0x2122, 0x2122]];
+const FONT_RANGES = (() => {
+  try {
+    const css = readFileSync(join(root, "shared/css/book.css"), "utf8");
+    const ranges = [...css.matchAll(/unicode-range:\s*([^;]+);/g)].flatMap((m) =>
+      m[1].split(",").map((part) => {
+        const [a, b] = part.trim().replace(/^U\+/i, "").split("-");
+        return [parseInt(a, 16), parseInt(b ?? a, 16)];
+      }),
+    );
+    if (ranges.length) return ranges;
+  } catch {}
+  return [[0x20, 0x7e], [0xa0, 0xff]];
+})();
 
 export const inFont = (text) =>
   [...text]
@@ -259,7 +273,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   if (waiting.length) {
     console.log("projects: waiting for your approval (not on the site yet):");
     for (const repo of waiting) console.log(`  ${repo.name} → "${displayName(repo.name)}"`);
-    console.log("  Approve these names with `node projects.mjs --approve`, or add them to projects.json with the names you want.");
+    console.log("  Approve these names with `node scripts/projects.mjs --approve`, or add them to projects.json with the names you want.");
   }
   if (!shown.length) {
     console.error("projects: warning: no approved repositories; the page is unchanged");
