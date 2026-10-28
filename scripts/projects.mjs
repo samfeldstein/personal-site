@@ -22,6 +22,8 @@
   projects.json lists it under "linkToRepo" (for sites that are only a
   rendered list); one with a homepage that is in neither "sites" nor
   "linkToRepo" gets a warning, so each link target is decided on purpose.
+  Sites that are not GitHub repositories go under "others" in projects.json
+  (name, url, started, description) and are merged into the list by date.
 
   It also checks the languages GitHub counts in each listed repository: any
   that makes up at least a fifth of one and is missing from the skills line on
@@ -280,7 +282,10 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     process.exit(0);
   }
 
-  let out = replaceBlock(html, renderEntries(shown, names));
+  const extras = (config.others ?? []).map((other) => ({ name: other.name, homepage: other.url, description: other.description, created_at: `${other.started}-01T00:00:00Z` }));
+  for (const extra of extras) names[extra.name] = extra.name;
+  const listed = [...shown, ...extras].sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at));
+  let out = replaceBlock(html, renderEntries(listed, names));
   console.log(`projects: ${shown.length} repositories on the page`);
 
   if (!file) {

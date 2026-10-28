@@ -21,5 +21,19 @@
   "linkToRepo": [
     "rss-feeds"
   ],
+  "others": [
+    {
+      "name": "ReGreen Big Bend",
+      "url": "https://regreenbigbend.com/",
+      "started": "2024-06",
+      "description": "Website for ReGreen Big Bend, an organization conserving and restoring native desert habitat in Texas's Big Bend"
+    },
+    {
+      "name": "Prairie Rose Arena",
+      "url": "https://prairierosearena.com/",
+      "started": "2024-07",
+      "description": "Website for Prairie Rose Arena, a year-round equine event center and horse motel in Elkhart, Iowa"
+    }
+  ],
   "notSkills": []
 }
