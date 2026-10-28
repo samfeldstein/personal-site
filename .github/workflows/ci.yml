@@ -12,7 +12,7 @@ permissions:
 
 jobs:
   build:
-    if: github.event_name != 'schedule'
+    if: github.event_name == 'push' || github.event_name == 'pull_request'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
@@ -22,6 +22,24 @@ jobs:
       - run: node scripts/sync.mjs --check
       - run: node scripts/check.mjs
       - run: node --test test/*.test.mjs
+
+  deployed:
+    if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    concurrency:
+      group: deployed
+      cancel-in-progress: true
+    steps:
+      - name: Wait for this commit to go live
+        run: |
+          for i in $(seq 1 30); do
+            live=$(curl -s "https://samfeldstein.xyz/version.txt?t=$(date +%s)" | tr -d '[:space:]')
+            if [ "$live" = "$GITHUB_SHA" ]; then echo "Live: $live"; exit 0; fi
+            sleep 30
+          done
+          echo "After 15 minutes the site still serves ${live:-nothing}, not $GITHUB_SHA."
+          echo "The Cloudflare build or deploy probably failed; see Workers Builds in the dashboard."
+          exit 1
 
   live:
     if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'

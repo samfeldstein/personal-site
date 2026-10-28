@@ -10,7 +10,7 @@
     "sync": "node scripts/sync.mjs",
     "check": "node scripts/check.mjs",
     "test": "node --test test/*.test.mjs",
-    "build": "node scripts/sync.mjs --check && node scripts/check.mjs",
+    "build": "node scripts/sync.mjs --check && node scripts/check.mjs && node scripts/version.mjs",
     "photos": "node scripts/photos.mjs",
     "lighthouse": "node scripts/lighthouse.mjs",
     "dev": "wrangler dev",

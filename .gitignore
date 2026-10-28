@@ -32,6 +32,9 @@ templates/
 .jampack/
 dist/
 
+# written by scripts/version.mjs during Cloudflare builds
+site/version.txt
+
 # Lighthouse reports
 *.report.html
 *.report.json
