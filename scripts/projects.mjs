@@ -24,8 +24,6 @@
   "linkToRepo" gets a warning, so each link target is decided on purpose.
   Sites that are not GitHub repositories go under "others" in projects.json
   (name, url, started, description) and are merged into the list by date.
-  "descriptions" in projects.json replaces a repository's GitHub description.
-
   It also checks the languages GitHub counts in each listed repository: any
   that makes up at least a fifth of one and is missing from the skills line on
   the Code page is added to the line (before Claude, if it's last), unless
@@ -261,7 +259,7 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     for (const repo of undecidedHomepages(repos.filter((r) => Object.hasOwn(names, r.name)), config)) {
       console.warn(`projects: warning: ${repo.name} has a homepage (${repo.homepage}); list it under "sites" in projects.json to link to it, or under "linkToRepo" to link to the GitHub repository`);
     }
-    repos = applyLinkToRepo(repos, config.linkToRepo).map((repo) => (config.descriptions?.[repo.name] ? { ...repo, description: config.descriptions[repo.name] } : repo));
+    repos = applyLinkToRepo(repos, config.linkToRepo);
   } catch (err) {
     console.error(`projects: warning: couldn't get the repositories (${err.message}); the page is unchanged`);
     process.exit(0);

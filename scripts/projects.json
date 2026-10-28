@@ -12,9 +12,6 @@
     "notebook-astro": "2024-10",
     "postoley-dance-ensemble-sample": "2025-04"
   },
-  "descriptions": {
-    "notebook-astro": "A wiki-like personal notebook built with Astro. No longer maintained"
-  },
   "sites": [
     "postoley-dance-ensemble-sample",
     "presswork-web-co",
