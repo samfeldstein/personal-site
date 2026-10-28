@@ -1,0 +1,38 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+  schedule:
+    - cron: "43 14 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    if: github.event_name != 'schedule'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version-file: .node-version
+      - run: node scripts/sync.mjs --check
+      - run: node scripts/check.mjs
+      - run: node --test test/*.test.mjs
+
+  live:
+    if: github.event_name == 'schedule' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Check the live pages
+        run: |
+          fail=0
+          for path in / /code/ /photos/ /published-writing/; do
+            status=$(curl -s -o /dev/null -w '%{http_code}' --retry 2 "https://samfeldstein.xyz$path")
+            echo "$status $path"
+            [ "$status" = "200" ] || fail=1
+          done
+          exit $fail
