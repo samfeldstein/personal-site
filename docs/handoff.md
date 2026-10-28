@@ -1,6 +1,14 @@
 # Handoff
 
-Last updated 2026-10-21. Read this, then `CLAUDE.md`, before working on the site.
+Last updated 2026-10-28. Read this, then `CLAUDE.md`, before working on the site.
+
+## 2026-10-28
+
+- **Code page.** Added ReGreen Big Bend (Jun 2024) and Prairie Rose Arena (Jul 2024), neither a GitHub repo, via a new `others` list in `scripts/projects.json` that `projects.mjs` merges in by date. Added Notebook Site (`notebook-site`, approved name, in `sites`). Digital Notebook stays, with its GitHub description now saying it's superseded. WordPress added to skills.
+- **Descriptions** come from GitHub, but only when `projects.mjs` runs (monthly pull request or by hand); copy changes in by hand between runs.
+- **CI** (`.github/workflows/ci.yml`): sync, check and tests on every push; on `main`, `npm run build` ends with `scripts/version.mjs` writing the commit to `site/version.txt` (gitignored), and the `deployed` job fails if the live `version.txt` doesn't match within 15 minutes, so a failed Cloudflare build or deploy emails the owner. Confirmed working on 2026-10-28. A daily job checks the four live pages return 200.
+- **Sandbox note.** Local sessions can't reach GitHub from Bash or read wrangler's login; use WebFetch for the GitHub API and hand-edit the project list to match what `projects.mjs` would write.
+- **Tests:** all 42 pass.
 
 ## 2026-10-21
 
@@ -54,6 +62,7 @@ Decided 2026-10-17: keep Workers Builds (every push to `main` deploys after `npm
 - A Content-Security-Policy header (needs hashes for the two inline head scripts, which `scripts/sync.mjs` would compute).
 - Redirects for the old `/_astro/*` gallery image URLs (87 rules), only for old image-search hits.
 - A notification when a new repo is waiting for approval.
+- Tests for the `others` merge in `projects.mjs`.
 - The roadmap: an About the Author page, and résumés from the Find a Job project (`ROADMAP.md`).
 
 ## How the work was done
