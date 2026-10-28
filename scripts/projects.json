@@ -5,7 +5,8 @@
     "presswork-web-co": "Presswork Web Co",
     "notebook-astro": "Digital Notebook",
     "shelf-talkers": "Shelf Talkers",
-    "rss-feeds": "RSS Feeds"
+    "rss-feeds": "RSS Feeds",
+    "notebook-site": "Notebook Site"
   },
   "started": {
     "notebook-astro": "2024-10",
@@ -16,7 +17,8 @@
     "presswork-web-co",
     "shelf-talkers",
     "notebook-astro",
-    "personal-site"
+    "personal-site",
+    "notebook-site"
   ],
   "linkToRepo": [
     "rss-feeds"
