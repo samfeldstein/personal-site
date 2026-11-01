@@ -19,11 +19,11 @@
     "shelf-talkers",
     "notebook-astro",
     "personal-site",
-    "notebook-site",
-    "planner"
+    "notebook-site"
   ],
   "linkToRepo": [
-    "rss-feeds"
+    "rss-feeds",
+    "planner"
   ],
   "others": [
     {
