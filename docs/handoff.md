@@ -5,7 +5,7 @@ Last updated 2026-11-01. Read this, then `CLAUDE.md`, before working on the site
 ## 2026-11-01
 
 - **Code page.** Added Planner (`planner`, approved name, Nov 2026). Its homepage is a GitHub Pages app, so it's in `linkToRepo`: `check.mjs` fails on any `github.io` project link. The owner kept that rule for now; narrowing it to allow `github.io` for repos in `sites` was offered. The run also moved Digital Notebook (Oct 2024) above Prairie Rose Arena (Jul 2024), into date order. Pushed and deployed.
-- **Dev server.** `.claude/launch.json` runs `npx wrangler dev` on port 8787 for the desktop app's browser pane (committed, not pushed).
+- **Dev server.** `.claude/launch.json` runs `npx wrangler dev` on port 8787 for the desktop app's browser pane. Pushed.
 - **Sandbox note.** WebFetch wasn't loaded this time either; the owner ran `node scripts/projects.mjs` and `gh` in their own terminal.
 - **Tests:** all 42 pass.
 
