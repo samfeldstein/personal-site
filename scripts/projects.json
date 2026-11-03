@@ -51,7 +51,9 @@
       "url": "https://regreenbigbend.com/",
       "started": "2024-06",
       "section": "professional",
-      "description": "Website for ReGreen Big Bend, an organization conserving and restoring native desert habitat in Texas's Big Bend"
+      "description": "Website for ReGreen Big Bend, an organization conserving and restoring native desert habitat in Texas's Big Bend",
+      "image": "regreen-big-bend.webp",
+      "alt": "ReGreen Big Bend home page: outlined title and the line Conserving and restoring native habitat in Texas's Big Bend"
     },
     {
       "name": "Prairie Rose Arena",
