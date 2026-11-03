@@ -9,6 +9,17 @@
     "notebook-site": "Notebook Site",
     "planner": "Planner"
   },
+  "sections": {
+    "personal-site": "personal",
+    "postoley-dance-ensemble-sample": "professional",
+    "presswork-web-co": "professional",
+    "notebook-astro": "personal",
+    "shelf-talkers": "personal",
+    "rss-feeds": "personal",
+    "notebook-site": "personal",
+    "planner": "personal"
+  },
+  "images": {},
   "started": {
     "notebook-astro": "2024-10",
     "postoley-dance-ensemble-sample": "2025-04"
@@ -30,12 +41,14 @@
       "name": "ReGreen Big Bend",
       "url": "https://regreenbigbend.com/",
       "started": "2024-06",
+      "section": "professional",
       "description": "Website for ReGreen Big Bend, an organization conserving and restoring native desert habitat in Texas's Big Bend"
     },
     {
       "name": "Prairie Rose Arena",
       "url": "https://prairierosearena.com/",
       "started": "2024-07",
+      "section": "professional",
       "description": "Website for Prairie Rose Arena, a year-round equine event center and horse motel in Elkhart, Iowa"
     }
   ],

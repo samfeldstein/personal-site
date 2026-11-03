@@ -344,6 +344,19 @@ a[href^="mailto:"]:not(.toc a)::after,
   display: block;
   font-feature-settings: "liga";
 }
+.work-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  margin-bottom: 0.6em;
+  border: 1px solid color-mix(in srgb, var(--leader) 45%, transparent);
+}
+.works a:hover .work-image,
+.works a:focus-visible .work-image {
+  border-color: var(--rubric);
+}
 .work-line {
   display: grid;
   grid-template-columns: 1fr auto;

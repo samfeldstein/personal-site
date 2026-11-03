@@ -458,6 +458,19 @@ a[href^="mailto:"]:not(.toc a)::after,
   display: block;
   font-feature-settings: "liga";
 }
+.work-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  margin-bottom: 0.6em;
+  border: 1px solid color-mix(in srgb, var(--leader) 45%, transparent);
+}
+.works a:hover .work-image,
+.works a:focus-visible .work-image {
+  border-color: var(--rubric);
+}
 .work-line {
   display: grid;
   grid-template-columns: 1fr auto;
@@ -588,23 +601,28 @@ a[href^="mailto:"]:not(.toc a)::after,
       <p>HTML, CSS, JavaScript, Python, Astro, Vue, MDX, Git, Bash, Cloudflare, WordPress, Claude</p>
     </section>
     <p class="hire"><a href="https://github.com/samfeldstein">GitHub</a> <span aria-hidden="true">·</span> <a href="mailto:sam@presswork.dev">Hire me</a></p>
-    <section class="projects" aria-labelledby="works">
-      <h2 id="works">Projects</h2>
+    <!-- projects -->
+    <section class="projects" aria-labelledby="professional-works">
+      <h2 id="professional-works">Professional</h2>
       <ol class="works">
-        <!-- projects -->
-        <li><a href="https://github.com/samfeldstein/planner"><span class="work-line"><cite class="work-title">Planner</cite><time datetime="2026-11">Nov 2026</time></span><span class="work-source"><i>An installable, offline iPhone PWA for todos. No accounts, no backend, no dependencies</i></span></a></li>
-        <li><a href="https://notebook-site.samfeldstein.workers.dev"><span class="work-line"><cite class="work-title">Notebook Site</cite><time datetime="2026-10">Oct 2026</time></span><span class="work-source"><i>A read-only website and template for my Markdown notebook</i></span></a></li>
         <li><a href="https://presswork.dev"><span class="work-line"><cite class="work-title">Presswork Web Co</cite><time datetime="2026-10">Oct 2026</time></span><span class="work-source"><i>My freelance business site. Plain HTML, CSS, and JavaScript on Cloudflare Workers</i></span></a></li>
-        <li><a href="https://github.com/samfeldstein/rss-feeds"><span class="work-line"><cite class="work-title">RSS Feeds</cite><time datetime="2026-10">Oct 2026</time></span><span class="work-source"><i>Collection of rss feeds for sites that don’t have them</i></span></a></li>
-        <li><a href="https://shelftalkers.samfeldstein.xyz"><span class="work-line"><cite class="work-title">Shelf Talkers</cite><time datetime="2025-06">Jun 2025</time></span><span class="work-source"><i>A simple web app for formatting shelf talkers</i></span></a></li>
         <li><a href="https://postoley.org"><span class="work-line"><cite class="work-title">Postoley Dance Ensemble</cite><time datetime="2025-04">Apr 2025</time></span><span class="work-source"><i>Website for Postoley Dance Ensemble and Danceophile Studio, a folk dance studio in Boulder, CO. Built with Astro and Decap CMS</i></span></a></li>
-        <li><a href="https://notes.samfeldstein.xyz/"><span class="work-line"><cite class="work-title">Digital Notebook</cite><time datetime="2024-10">Oct 2024</time></span><span class="work-source"><i>A wiki-like personal notebook built with Astro. Superseded by my notebook site project</i></span></a></li>
         <li><a href="https://prairierosearena.com/"><span class="work-line"><cite class="work-title">Prairie Rose Arena</cite><time datetime="2024-07">Jul 2024</time></span><span class="work-source"><i>Website for Prairie Rose Arena, a year-round equine event center and horse motel in Elkhart, Iowa</i></span></a></li>
-        <li><a href="https://samfeldstein.xyz"><span class="work-line"><cite class="work-title">Personal Site</cite><time datetime="2024-06">Jun 2024</time></span><span class="work-source"><i>My personal website, built with plain HTML, CSS, and JavaScript</i></span></a></li>
         <li><a href="https://regreenbigbend.com/"><span class="work-line"><cite class="work-title">ReGreen Big Bend</cite><time datetime="2024-06">Jun 2024</time></span><span class="work-source"><i>Website for ReGreen Big Bend, an organization conserving and restoring native desert habitat in Texas’s Big Bend</i></span></a></li>
-        <!-- /projects -->
       </ol>
     </section>
+    <section class="projects" aria-labelledby="personal-works">
+      <h2 id="personal-works">Personal</h2>
+      <ol class="works">
+        <li><a href="https://github.com/samfeldstein/planner"><span class="work-line"><cite class="work-title">Planner</cite><time datetime="2026-11">Nov 2026</time></span><span class="work-source"><i>An installable, offline iPhone PWA for todos. No accounts, no backend, no dependencies</i></span></a></li>
+        <li><a href="https://notebook-site.samfeldstein.workers.dev"><span class="work-line"><cite class="work-title">Notebook Site</cite><time datetime="2026-10">Oct 2026</time></span><span class="work-source"><i>A read-only website and template for my Markdown notebook</i></span></a></li>
+        <li><a href="https://github.com/samfeldstein/rss-feeds"><span class="work-line"><cite class="work-title">RSS Feeds</cite><time datetime="2026-10">Oct 2026</time></span><span class="work-source"><i>Collection of rss feeds for sites that don’t have them</i></span></a></li>
+        <li><a href="https://shelftalkers.samfeldstein.xyz"><span class="work-line"><cite class="work-title">Shelf Talkers</cite><time datetime="2025-06">Jun 2025</time></span><span class="work-source"><i>A simple web app for formatting shelf talkers</i></span></a></li>
+        <li><a href="https://notes.samfeldstein.xyz/"><span class="work-line"><cite class="work-title">Digital Notebook</cite><time datetime="2024-10">Oct 2024</time></span><span class="work-source"><i>A wiki-like personal notebook built with Astro. Superseded by my notebook site project</i></span></a></li>
+        <li><a href="https://samfeldstein.xyz"><span class="work-line"><cite class="work-title">Personal Site</cite><time datetime="2024-06">Jun 2024</time></span><span class="work-source"><i>My personal website, built with plain HTML, CSS, and JavaScript</i></span></a></li>
+      </ol>
+    </section>
+    <!-- /projects -->
   </main>
   <!-- shared:endmatter -->
 <section class="page epigraph-page" aria-label="Epigraph" hidden>

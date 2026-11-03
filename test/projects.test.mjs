@@ -5,7 +5,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { addSkills, applyLinkToRepo, applyStarted, undecidedHomepages, displayName, filterRepos, missingSkills, skillsIn, inFont, splitApproved, formatDate, renderEntries, renderEntry, replaceBlock, repoLink } from "../scripts/projects.mjs";
+import { addSkills, applyLinkToRepo, applyStarted, undecidedHomepages, displayName, filterRepos, missingSkills, skillsIn, inFont, splitApproved, formatDate, renderEntries, renderEntry, renderSections, sectionOf, replaceBlock, repoLink } from "../scripts/projects.mjs";
 
 const script = fileURLToPath(new URL("../scripts/projects.mjs", import.meta.url));
 
@@ -124,15 +124,19 @@ test("--file run writes the list into the page", () => {
         repo({ name: "fork", fork: true }),
       ]),
     );
-    writeFileSync(join(dir, "names.json"), JSON.stringify({ names: { "first-website": "First Website", "rss-feeds": "RSS Feeds" } }));
+    writeFileSync(join(dir, "names.json"), JSON.stringify({ names: { "first-website": "First Website", "rss-feeds": "RSS Feeds" }, sections: { "first-website": "professional", "rss-feeds": "personal" } }));
     const out = execFileSync("node", [script, "--file", join(dir, "repos.json"), "--page", join(dir, "index.html"), "--names", join(dir, "names.json")], { encoding: "utf8" });
     assert.equal(out.trim(), "projects: 2 repositories on the page");
     const html = readFileSync(join(dir, "index.html"), "utf8");
     assert.equal(
       html,
       "<!doctype html>\n<ol>\n      <!-- projects -->\n" +
-        '        <li><a href="https://rss.example/"><span class="work-line"><cite class="work-title">RSS Feeds</cite><time datetime="2024-08">Aug 2024</time></span><span class="work-source"><i>A thing</i></span></a></li>\n' +
+        '    <section class="projects" aria-labelledby="professional-works">\n      <h2 id="professional-works">Professional</h2>\n      <ol class="works">\n' +
         '        <li><a href="https://github.com/samfeldstein/thing"><span class="work-line"><cite class="work-title">First Website</cite><time datetime="2019-05">May 2019</time></span><span class="work-source"><span class="work-type">Source code</span></span></a></li>\n' +
+        '      </ol>\n    </section>\n' +
+        '    <section class="projects" aria-labelledby="personal-works">\n      <h2 id="personal-works">Personal</h2>\n      <ol class="works">\n' +
+        '        <li><a href="https://rss.example/"><span class="work-line"><cite class="work-title">RSS Feeds</cite><time datetime="2024-08">Aug 2024</time></span><span class="work-source"><i>A thing</i></span></a></li>\n' +
+        '      </ol>\n    </section>\n' +
         "      <!-- /projects -->\n</ol>\n",
     );
   } finally {
@@ -248,4 +252,55 @@ test("applyLinkToRepo drops the homepage of listed repositories only", () => {
 test("undecidedHomepages finds homepages in neither sites nor linkToRepo", () => {
   const repos = [repo({ name: "a", homepage: "https://a.example/" }), repo({ name: "b", homepage: "https://b.example/" }), repo({ name: "c", homepage: "https://c.example/" }), repo({ name: "d", homepage: "" })];
   assert.deepEqual(undecidedHomepages(repos, { sites: ["a"], linkToRepo: ["b"] }).map((r) => r.name), ["c"]);
+});
+
+test("renderEntry puts the image first in the link, only when one is given", () => {
+  const out = renderEntry(repo({ name: "x" }), "X", { image: "x.webp", alt: 'A "shot"' });
+  assert.match(out, /<a href="[^"]+"><img class="work-image" src="\/img\/projects\/x\.webp" width="1280" height="720" loading="lazy" alt="A &quot;shot&quot;"><span class="work-line">/);
+  assert.doesNotMatch(renderEntry(repo({}), "X", {}), /<img/);
+  assert.doesNotMatch(renderEntry(repo({}), "X", { image: "", alt: "a" }), /<img/);
+  assert.doesNotMatch(renderEntry(repo({})), /<img/);
+});
+
+test("renderSections writes Professional then Personal, skips an empty one, and defaults to Personal", () => {
+  const repos = [repo({ name: "a" }), repo({ name: "b" }), repo({ name: "c" })];
+  const out = renderSections(repos, {}, { a: "personal", b: "professional" });
+  assert.ok(out.indexOf('id="professional-works">Professional') < out.indexOf('id="personal-works">Personal'));
+  assert.match(out, /<h2 id="professional-works">Professional<\/h2>\n      <ol class="works">\n.*<cite class="work-title">B<\/cite>.*\n      <\/ol>/);
+  assert.match(out, /<h2 id="personal-works">Personal<\/h2>\n      <ol class="works">\n.*">A<\/cite>.*\n.*">C<\/cite>/);
+  assert.doesNotMatch(renderSections([repo({ name: "a" })], {}, { a: "professional" }), /Personal/);
+  assert.equal(sectionOf("zzz", {}), "personal");
+  assert.equal(sectionOf("a", { a: "bogus" }), "personal");
+});
+
+test("--file run sorts within sections, adds images from images and others, warns on a missing section", () => {
+  const dir = tempDir();
+  try {
+    writeFileSync(join(dir, "index.html"), page);
+    writeFileSync(
+      join(dir, "repos.json"),
+      JSON.stringify([repo({ name: "old", created_at: "2020-01-01T00:00:00Z" }), repo({ name: "new", created_at: "2024-01-01T00:00:00Z" }), repo({ name: "nosection", created_at: "2022-01-01T00:00:00Z" })]),
+    );
+    writeFileSync(
+      join(dir, "names.json"),
+      JSON.stringify({
+        names: { old: "Old", new: "New", nosection: "No Section" },
+        sections: { old: "professional", new: "professional" },
+        images: { new: { image: "new.webp", alt: "New site" } },
+        others: [{ name: "Other", url: "https://other.example/", started: "2023-01", section: "professional", image: "other.webp", alt: "Other site", description: "Other." }],
+      }),
+    );
+    const result = execFileSync("node", [script, "--file", join(dir, "repos.json"), "--page", join(dir, "index.html"), "--names", join(dir, "names.json")], { encoding: "utf8", stdio: ["ignore", "pipe", "pipe"] });
+    assert.match(result, /3 repositories on the page/);
+    const html = readFileSync(join(dir, "index.html"), "utf8");
+    const pro = html.slice(html.indexOf("professional-works\">Pro"), html.indexOf("personal-works\">Per"));
+    assert.deepEqual([...pro.matchAll(/work-title">([^<]+)/g)].map((m) => m[1]), ["New", "Other", "Old"]);
+    assert.match(html, /<a href="https:\/\/other\.example\/"><img class="work-image" src="\/img\/projects\/other\.webp"/);
+    assert.match(html, /<img class="work-image" src="\/img\/projects\/new\.webp"[^>]*alt="New site"><span class="work-line"><cite class="work-title">New</);
+    assert.match(html.slice(html.indexOf("personal-works\">Per")), /No Section/);
+    const err = execFileSync("sh", ["-c", `node "${script}" --file "${join(dir, "repos.json")}" --page "${join(dir, "index.html")}" --names "${join(dir, "names.json")}" 2>&1 >/dev/null`], { encoding: "utf8" });
+    assert.match(err, /nosection has no "section"/);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });

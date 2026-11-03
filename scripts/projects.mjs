@@ -15,7 +15,12 @@
   there; that is the owner's approval of each name. New repositories stay
   off the page and are reported with a suggested name until approved, either
   with --approve or by adding them to projects.json by hand. The list goes
-  between the <!-- projects --> markers in site/code/index.html, newest first.
+  between the <!-- projects --> markers in site/code/index.html as two
+  sections, Professional then Personal, each newest first. projects.json gives
+  every project a section ("sections" by repository name, or "section" on an
+  "others" entry); one without a section goes under Personal with a warning.
+  An optional "image" (file in site/img/projects/) and "alt" per project
+  ("images" by name, or on an "others" entry) adds a picture to the entry.
   A repository's date is its GitHub creation month unless projects.json gives
   another under "started" (YYYY-MM), for projects older than their repository.
   A repository's entry links to its GitHub homepage field when set, unless
@@ -157,15 +162,35 @@ export const inFont = (text) =>
     .replace(/\s+/g, " ")
     .trim();
 
-export function renderEntry(repo, name = displayName(repo.name)) {
+export const SECTIONS = [
+  { key: "professional", title: "Professional" },
+  { key: "personal", title: "Personal" },
+];
+
+export function sectionOf(key, sections = {}) {
+  return SECTIONS.some((s) => s.key === sections[key]) ? sections[key] : "personal";
+}
+
+export function renderEntry(repo, name = displayName(repo.name), picture = null) {
   const date = formatDate(repo.created_at);
   const desc = inFont(repo.description ?? "").replace(/'/g, "\u2019").replace(/[.\s]+$/, "");
   const type = /^https?:\/\//i.test(repo.homepage ?? "") ? "Website" : "Source code";
-  return `        <li><a href="${esc(repoLink(repo))}"><span class="work-line"><cite class="work-title">${esc(name)}</cite><time datetime="${date.datetime}">${date.text}</time></span><span class="work-source">${desc ? `<i>${esc(desc)}</i>` : `<span class="work-type">${type}</span>`}</span></a></li>`;
+  const image = picture?.image ? `<img class="work-image" src="/img/projects/${esc(picture.image)}" width="1280" height="720" loading="lazy" alt="${esc(picture.alt ?? "")}">` : "";
+  return `        <li><a href="${esc(repoLink(repo))}">${image}<span class="work-line"><cite class="work-title">${esc(name)}</cite><time datetime="${date.datetime}">${date.text}</time></span><span class="work-source">${desc ? `<i>${esc(desc)}</i>` : `<span class="work-type">${type}</span>`}</span></a></li>`;
 }
 
-export function renderEntries(repos, names = {}) {
-  return repos.map((repo) => renderEntry(repo, names[repo.name] ?? displayName(repo.name))).join("\n");
+export function renderEntries(repos, names = {}, images = {}) {
+  return repos.map((repo) => renderEntry(repo, names[repo.name] ?? displayName(repo.name), images[repo.name])).join("\n");
+}
+
+export function renderSections(repos, names = {}, sections = {}, images = {}) {
+  return SECTIONS.map(({ key, title }) => ({ key, title, repos: repos.filter((repo) => sectionOf(repo.name, sections) === key) }))
+    .filter((section) => section.repos.length)
+    .map(
+      ({ key, title, repos }) =>
+        `    <section class="projects" aria-labelledby="${key}-works">\n      <h2 id="${key}-works">${title}</h2>\n      <ol class="works">\n${renderEntries(repos, names, images)}\n      </ol>\n    </section>`,
+    )
+    .join("\n");
 }
 
 export function splitApproved(repos, names) {
@@ -282,9 +307,18 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
   }
 
   const extras = (config.others ?? []).map((other) => ({ name: other.name, homepage: other.url, description: other.description, created_at: `${other.started}-01T00:00:00Z` }));
+  const sections = { ...(config.sections ?? {}) };
+  const images = { ...(config.images ?? {}) };
+  for (const other of config.others ?? []) {
+    if (other.section) sections[other.name] = other.section;
+    if (other.image || other.alt) images[other.name] = { image: other.image, alt: other.alt };
+  }
   for (const extra of extras) names[extra.name] = extra.name;
   const listed = [...shown, ...extras].sort((a, b) => Date.parse(b.created_at) - Date.parse(a.created_at));
-  let out = replaceBlock(html, renderEntries(listed, names));
+  for (const entry of listed) {
+    if (!SECTIONS.some((s) => s.key === sections[entry.name])) console.warn(`projects: warning: ${entry.name} has no "section" in projects.json; listing it under Personal`);
+  }
+  let out = replaceBlock(html, renderSections(listed, names, sections, images));
   console.log(`projects: ${shown.length} repositories on the page`);
 
   if (!file) {
