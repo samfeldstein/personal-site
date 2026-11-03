@@ -40,3 +40,18 @@
   font-size: 0.9em;
   color: var(--ink-faded);
 }
+
+@media (min-width: 48em) {
+  .projects-grid {
+    width: min(64rem, 100vw - 4rem);
+    margin-inline: calc(50% - min(32rem, 50vw - 2rem));
+  }
+  .projects-grid .works {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2.5rem 2.5rem;
+  }
+  .projects-grid .works li + li {
+    margin-top: 0;
+  }
+}

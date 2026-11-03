@@ -188,7 +188,7 @@ export function renderSections(repos, names = {}, sections = {}, images = {}) {
     .filter((section) => section.repos.length)
     .map(
       ({ key, title, repos }) =>
-        `    <section class="projects" aria-labelledby="${key}-works">\n      <h2 id="${key}-works">${title}</h2>\n      <ol class="works">\n${renderEntries(repos, names, images)}\n      </ol>\n    </section>`,
+        `    <section class="${key === "professional" ? "projects projects-grid" : "projects"}" aria-labelledby="${key}-works">\n      <h2 id="${key}-works">${title}</h2>\n      <ol class="works">\n${renderEntries(repos, names, images)}\n      </ol>\n    </section>`,
     )
     .join("\n");
 }

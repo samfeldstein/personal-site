@@ -558,6 +558,21 @@ a[href^="mailto:"]:not(.toc a)::after,
   font-size: 0.9em;
   color: var(--ink-faded);
 }
+
+@media (min-width: 48em) {
+  .projects-grid {
+    width: min(64rem, 100vw - 4rem);
+    margin-inline: calc(50% - min(32rem, 50vw - 2rem));
+  }
+  .projects-grid .works {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 2.5rem 2.5rem;
+  }
+  .projects-grid .works li + li {
+    margin-top: 0;
+  }
+}
 </style>
 <script type="speculationrules">
 { "prefetch": [{ "where": { "and": [{ "href_matches": "/*" }, { "not": { "href_matches": "/static/*" } }, { "not": { "href_matches": "/img/*" } }] }, "eagerness": "eager" }] }
@@ -602,7 +617,7 @@ a[href^="mailto:"]:not(.toc a)::after,
     </section>
     <p class="hire"><a href="https://github.com/samfeldstein">GitHub</a> <span aria-hidden="true">·</span> <a href="mailto:sam@presswork.dev">Hire me</a></p>
     <!-- projects -->
-    <section class="projects" aria-labelledby="professional-works">
+    <section class="projects projects-grid" aria-labelledby="professional-works">
       <h2 id="professional-works">Professional</h2>
       <ol class="works">
         <li><a href="https://presswork.dev"><img class="work-image" src="/img/projects/presswork-web-co.webp" width="1280" height="720" loading="lazy" alt="Presswork home page: Your website, fully managed"><span class="work-line"><cite class="work-title">Presswork Web Co</cite><time datetime="2026-10">Oct 2026</time></span><span class="work-source"><i>My freelance business site. Plain HTML, CSS, and JavaScript on Cloudflare Workers</i></span></a></li>
