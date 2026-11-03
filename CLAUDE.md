@@ -39,5 +39,5 @@ All scripts are dependency-free Node except `scripts/photos.mjs` (`sharp`, `exif
 - **Code page skills** are one plain-text line of names separated by commas, with no "and" before the last one, even when skills are added.
 - **Project names** are approved by the owner in `scripts/projects.json`; a new repository appears only after its name is approved there.
 - **No third-party hosts.** Nothing loads from a host outside `allowedHosts`; plain `<a>` links to other sites are fine.
-- **Comments:** almost none in shipped CSS and JS. Keep the structural markers (`<!-- page: -->`, `<!-- shared:... -->`, `<!-- gallery -->`, `<!-- projects -->`). Don’t add explanatory comments.
+- **Comments:** none in JS or HTML beyond the structural markers (`<!-- page: -->`, `<!-- shared:... -->`, `<!-- gallery -->`, `<!-- projects -->`), because nothing strips them. A short why-comment is allowed in `shared/css/` files (a hack, a browser bug, an ordering constraint), since `sync.mjs` strips CSS comments when it inlines. Put other explanations in `docs/`.
 - Git history is still about 480 MB from the old committed Astro image cache; rewriting it is optional and the owner’s call.
