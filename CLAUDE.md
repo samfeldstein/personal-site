@@ -8,7 +8,7 @@ Sam Feldstein’s personal site (samfeldstein.xyz): plain HTML, CSS and JavaScri
 
 ## Commands
 
-All scripts are dependency-free Node except `scripts/photos.mjs` (`sharp`, `exiftool-vendored`; `npm install` first).
+All scripts are dependency-free Node except `scripts/photos.mjs` (`sharp`, `exiftool-vendored`; `npm install` first) and `scripts/screenshots.mjs` (`sharp` and Chrome; run it in the owner's terminal, since the sandbox has no network). `screenshots.mjs` writes 1280×720 WebPs to `site/img/projects/` for the professional projects; the Code page shows them above the entry, with `images` (file and alt text) in `scripts/projects.json`. Personal projects stay a plain list. A site that blocks bots (ReGreen Big Bend) gets no image.
 
 - `node scripts/sync.mjs`: writes the shared parts into every page, inlines CSS, stamps script links, regenerates the sitemaps (`--check` writes nothing and exits 1 if anything is out of date)
 - `node scripts/check.mjs`: fails if the site has drifted or something is broken

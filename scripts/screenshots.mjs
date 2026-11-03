@@ -7,7 +7,7 @@
 
   Uses headless Google Chrome (CHROME env var overrides the path) and sharp.
   Light mode, top of page, no cookie-banner handling. Alt text lives in
-  scripts/screenshots.json.
+  scripts/projects.json.
 */
 import { mkdirSync, existsSync, readFileSync, rmSync, statSync } from "node:fs";
 import { execFileSync } from "node:child_process";

@@ -22,11 +22,11 @@
   "images": {
     "postoley-dance-ensemble-sample": {
       "image": "postoley-dance-ensemble.webp",
-      "alt": "Postoley Dance Ensemble and Danceophile Studio home page: red and blue illuminated headings above photos of four folk dancers in embroidered costumes and a smiling pair with raised hands."
+      "alt": "Postoley Dance Ensemble home page: illuminated headings above photos of folk dancers"
     },
     "presswork-web-co": {
       "image": "presswork-web-co.webp",
-      "alt": "Presswork home page: the headline \"Your website, fully managed.\" in white and gold serif type on a dark background, with buttons to get started or request a free site audit."
+      "alt": "Presswork home page: Your website, fully managed"
     }
   },
   "started": {
@@ -59,7 +59,7 @@
       "started": "2024-07",
       "section": "professional",
       "image": "prairie-rose-arena.webp",
-      "alt": "Prairie Rose Arena home page: a cream page with a red patterned border, the arena's logo, drawings of a boot and a saddle, the address, open ride hours, and the headline \"A place to have fun with your horse\".",
+      "alt": "Prairie Rose Arena home page with boot and saddle drawings",
       "description": "Website for Prairie Rose Arena, a year-round equine event center and horse motel in Elkhart, Iowa"
     }
   ],
