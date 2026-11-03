@@ -42,7 +42,7 @@ for (const [name, url] of Object.entries(SITES)) {
   try {
     execFileSync(CHROME, [
       "--headless=new", "--disable-gpu", "--hide-scrollbars", "--force-color-profile=srgb",
-      "--force-prefers-color-scheme=light", "--window-size=1280,720", "--virtual-time-budget=10000",
+      "--force-prefers-color-scheme=light", "--force-prefers-reduced-motion", "--window-size=1280,720", "--virtual-time-budget=10000",
       `--user-data-dir=${join(tmp, "profile-" + name)}`, `--screenshot=${png}`, url,
     ], { stdio: "ignore", timeout: 60000 });
     const file = join(OUT, `${name}.webp`);
