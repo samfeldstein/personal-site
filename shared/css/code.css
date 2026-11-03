@@ -46,8 +46,8 @@
 
 @media (min-width: 48em) {
   .projects-grid {
-    width: min(64rem, 100vw - 4rem);
-    margin-inline: calc(50% - min(32rem, 50vw - 2rem));
+    width: min(80rem, 100vw - 4rem);
+    margin-inline: calc(50% - min(40rem, 50vw - 2rem));
   }
   .projects-grid .works {
     display: grid;
