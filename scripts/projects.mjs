@@ -163,8 +163,8 @@ export const inFont = (text) =>
     .trim();
 
 export const SECTIONS = [
-  { key: "professional", title: "Professional" },
-  { key: "personal", title: "Personal" },
+  { key: "professional", title: "Professional Projects" },
+  { key: "personal", title: "Personal Projects" },
 ];
 
 export function sectionOf(key, sections = {}) {

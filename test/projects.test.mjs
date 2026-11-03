@@ -131,10 +131,10 @@ test("--file run writes the list into the page", () => {
     assert.equal(
       html,
       "<!doctype html>\n<ol>\n      <!-- projects -->\n" +
-        '    <section class="projects projects-grid" aria-labelledby="professional-works">\n      <h2 id="professional-works">Professional</h2>\n      <ol class="works">\n' +
+        '    <section class="projects projects-grid" aria-labelledby="professional-works">\n      <h2 id="professional-works">Professional Projects</h2>\n      <ol class="works">\n' +
         '        <li><a href="https://github.com/samfeldstein/thing"><span class="work-line"><cite class="work-title">First Website</cite><time datetime="2019-05">May 2019</time></span><span class="work-source"><span class="work-type">Source code</span></span></a></li>\n' +
         '      </ol>\n    </section>\n' +
-        '    <section class="projects" aria-labelledby="personal-works">\n      <h2 id="personal-works">Personal</h2>\n      <ol class="works">\n' +
+        '    <section class="projects" aria-labelledby="personal-works">\n      <h2 id="personal-works">Personal Projects</h2>\n      <ol class="works">\n' +
         '        <li><a href="https://rss.example/"><span class="work-line"><cite class="work-title">RSS Feeds</cite><time datetime="2024-08">Aug 2024</time></span><span class="work-source"><i>A thing</i></span></a></li>\n' +
         '      </ol>\n    </section>\n' +
         "      <!-- /projects -->\n</ol>\n",
@@ -266,9 +266,9 @@ test("renderSections writes Professional then Personal, skips an empty one, and 
   const repos = [repo({ name: "a" }), repo({ name: "b" }), repo({ name: "c" })];
   const out = renderSections(repos, {}, { a: "personal", b: "professional" });
   assert.ok(out.indexOf('id="professional-works">Professional') < out.indexOf('id="personal-works">Personal'));
-  assert.match(out, /<h2 id="professional-works">Professional<\/h2>\n      <ol class="works">\n.*<cite class="work-title">B<\/cite>.*\n      <\/ol>/);
-  assert.match(out, /<h2 id="personal-works">Personal<\/h2>\n      <ol class="works">\n.*">A<\/cite>.*\n.*">C<\/cite>/);
-  assert.doesNotMatch(renderSections([repo({ name: "a" })], {}, { a: "professional" }), /Personal/);
+  assert.match(out, /<h2 id="professional-works">Professional Projects<\/h2>\n      <ol class="works">\n.*<cite class="work-title">B<\/cite>.*\n      <\/ol>/);
+  assert.match(out, /<h2 id="personal-works">Personal Projects<\/h2>\n      <ol class="works">\n.*">A<\/cite>.*\n.*">C<\/cite>/);
+  assert.doesNotMatch(renderSections([repo({ name: "a" })], {}, { a: "professional" }), /Personal Projects/);
   assert.match(out, /<section class="projects projects-grid" aria-labelledby="professional-works">/);
   assert.match(out, /<section class="projects" aria-labelledby="personal-works">/);
   assert.equal(sectionOf("zzz", {}), "personal");

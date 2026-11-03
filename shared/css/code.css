@@ -33,7 +33,10 @@
 }
 
 .projects {
-  margin-top: 4.5rem;
+  margin-top: 8rem;
+}
+.projects-grid {
+  margin-top: 6.5rem;
 }
 .projects h2 {
   margin-bottom: 1.5rem;
