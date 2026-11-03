@@ -425,10 +425,15 @@ a[href^="mailto:"]:not(.toc a)::after,
   .page,
   .colophon-page {
     min-height: 0;
+    padding-block: 2rem;
+  }
+  h2 {
+    break-after: avoid;
   }
   .works li,
   .epigraph,
-  .pagespeed {
+  .pagespeed,
+  .imprint {
     break-inside: avoid;
   }
 }
