@@ -1,6 +1,15 @@
 # Handoff
 
-Last updated 2026-11-01. Read this, then `CLAUDE.md`, before working on the site.
+Last updated 2026-11-03. Read this, then `CLAUDE.md`, before working on the site.
+
+## 2026-11-03
+
+- **Code page.** Two sections, "Professional Projects" first, then "Personal Projects". Each project's section is in `scripts/projects.json` (`sections` map for repos, `section` on `others`); a project with none goes under Personal with a warning. Professional is a two-column grid on wide screens (`.projects-grid` in `shared/css/code.css`, 80rem wide, 5rem gap, single column under 48em); personal stays a plain list.
+- **Images.** Only professional projects have one: 1280x720 WebP in `site/img/projects/`, set in `projects.json` (`images` map for repos, `image` and `alt` on `others`), shown above the title with rounded corners and a soft shadow (`.work-image` in `book.css`). `check.mjs` requires alt, width, height, `loading="lazy"`, an existing file, no orphans, and under 80 KB. ReGreen Big Bend's was taken by hand (its site blocks bot screenshots).
+- **Screenshots.** `scripts/screenshots.mjs` (`sharp` and Chrome; run it in the owner's terminal, the sandbox has no network) remakes them; it asks for reduced motion so Presswork's typing animation doesn't show. `projects.mjs` also needs the owner's terminal to write the page.
+- **Comments.** Short why-comments are now allowed in `shared/css/` (sync strips them); CLAUDE.md says so.
+- **Not done (from the cold review).** The first image is lazy-loaded, so it may load late on desktop (`check.mjs` requires lazy); a missing or mistyped `section` only warns; an empty project list wouldn't fail the build.
+- **Tests:** all 50 pass. 12 commits were not pushed at the time of writing.
 
 ## 2026-11-01
 
