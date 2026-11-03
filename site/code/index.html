@@ -52,7 +52,6 @@ body {
 img {
   max-width: 100%;
   height: auto;
-  animation: fadeIn 0.5s ease-in forwards;
 }
 
 figure {
@@ -421,6 +420,10 @@ a[href^="http"]:not(.toc a, .works a, .work, [href^="https://samfeldstein.xyz"])
   opacity: 0.9;
 }
 
+.works a[href^="http"]:not([href^="https://samfeldstein.xyz"]) .work-source::after {
+  display: inline;
+}
+
 a[href^="mailto:"]:not(.toc a)::after,
 .toc a[href^="mailto:"] > span::after {
   content: "" / ", email";
@@ -435,6 +438,14 @@ a[href^="mailto:"]:not(.toc a)::after,
 
 .toc a[href^="mailto:"] > span::after {
   content: "" / "";
+}
+
+@media (forced-colors: active) {
+  a[href^="mailto:"]:not(.toc a)::after,
+  .toc a[href^="mailto:"] > span::after {
+    forced-color-adjust: none;
+    background: LinkText;
+  }
 }
 
 .epigraph-page[hidden] {
@@ -518,6 +529,21 @@ a[href^="mailto:"]:not(.toc a)::after,
 .works a:focus-visible .work-title::after {
   border-bottom-color: currentColor;
 }
+
+@media print {
+  :root {
+    color-scheme: light;
+  }
+  .page,
+  .colophon-page {
+    min-height: 0;
+  }
+  .works li,
+  .epigraph,
+  .pagespeed {
+    break-inside: avoid;
+  }
+}
 .chapter-subtitle {
   margin: 1.25rem 0 0;
   font-style: italic;
@@ -564,7 +590,7 @@ a[href^="mailto:"]:not(.toc a)::after,
   color: var(--ink-faded);
 }
 
-@media (min-width: 48em) {
+@media (min-width: 56em) {
   .projects-grid {
     width: min(80rem, 100vw - 4rem);
     margin-inline: calc(50% - min(40rem, 50vw - 2rem));
@@ -624,16 +650,16 @@ a[href^="mailto:"]:not(.toc a)::after,
     <!-- projects -->
     <section class="projects projects-grid" aria-labelledby="professional-works">
       <h2 id="professional-works">Professional Projects</h2>
-      <ol class="works">
-        <li><a href="https://presswork.dev"><img class="work-image" src="/img/projects/presswork-web-co.webp" width="1280" height="720" loading="lazy" alt="Presswork home page: Your website, fully managed"><span class="work-line"><cite class="work-title">Presswork Web Co</cite><time datetime="2026-10">Oct 2026</time></span><span class="work-source"><i>My freelance business site. Plain HTML, CSS, and JavaScript on Cloudflare Workers</i></span></a></li>
-        <li><a href="https://postoley.org"><img class="work-image" src="/img/projects/postoley-dance-ensemble.webp" width="1280" height="720" loading="lazy" alt="Postoley Dance Ensemble home page: illuminated headings above photos of folk dancers"><span class="work-line"><cite class="work-title">Postoley Dance Ensemble</cite><time datetime="2025-04">Apr 2025</time></span><span class="work-source"><i>Website for Postoley Dance Ensemble and Danceophile Studio, a folk dance studio in Boulder, CO. Built with Astro and Decap CMS</i></span></a></li>
-        <li><a href="https://prairierosearena.com/"><img class="work-image" src="/img/projects/prairie-rose-arena.webp" width="1280" height="720" loading="lazy" alt="Prairie Rose Arena home page with boot and saddle drawings"><span class="work-line"><cite class="work-title">Prairie Rose Arena</cite><time datetime="2024-07">Jul 2024</time></span><span class="work-source"><i>Website for Prairie Rose Arena, a year-round equine event center and horse motel in Elkhart, Iowa</i></span></a></li>
-        <li><a href="https://regreenbigbend.com/"><img class="work-image" src="/img/projects/regreen-big-bend.webp" width="1280" height="720" loading="lazy" alt="ReGreen Big Bend home page: outlined title and the line Conserving and restoring native habitat in Texas&#39;s Big Bend"><span class="work-line"><cite class="work-title">ReGreen Big Bend</cite><time datetime="2024-06">Jun 2024</time></span><span class="work-source"><i>Website for ReGreen Big Bend, an organization conserving and restoring native desert habitat in Texas’s Big Bend</i></span></a></li>
+      <ol class="works" role="list">
+        <li><a href="https://presswork.dev"><img class="work-image" src="/img/projects/presswork-web-co.webp" srcset="/img/projects/presswork-web-co-640.webp 640w, /img/projects/presswork-web-co.webp 1280w" sizes="(min-width: 56em) min(600px, 50vw - 4.5rem), min(100vw - 3rem, 650px)" width="1280" height="720" loading="lazy" alt="Home page: Your website, fully managed"><span class="work-line"><cite class="work-title">Presswork Web Co</cite><time datetime="2026-10">Oct 2026</time></span><span class="work-source"><i>My freelance business site. Plain HTML, CSS, and JavaScript on Cloudflare Workers</i></span></a></li>
+        <li><a href="https://postoley.org"><img class="work-image" src="/img/projects/postoley-dance-ensemble.webp" srcset="/img/projects/postoley-dance-ensemble-640.webp 640w, /img/projects/postoley-dance-ensemble.webp 1280w" sizes="(min-width: 56em) min(600px, 50vw - 4.5rem), min(100vw - 3rem, 650px)" width="1280" height="720" loading="lazy" alt="Home page: illuminated headings above photos of folk dancers"><span class="work-line"><cite class="work-title">Postoley Dance Ensemble</cite><time datetime="2025-04">Apr 2025</time></span><span class="work-source"><i>Website for Postoley Dance Ensemble and Danceophile Studio, a folk dance studio in Boulder, CO. Built with Astro and Decap CMS</i></span></a></li>
+        <li><a href="https://prairierosearena.com/"><img class="work-image" src="/img/projects/prairie-rose-arena.webp" srcset="/img/projects/prairie-rose-arena-640.webp 640w, /img/projects/prairie-rose-arena.webp 1280w" sizes="(min-width: 56em) min(600px, 50vw - 4.5rem), min(100vw - 3rem, 650px)" width="1280" height="720" loading="lazy" alt="Home page with boot and saddle drawings"><span class="work-line"><cite class="work-title">Prairie Rose Arena</cite><time datetime="2024-07">Jul 2024</time></span><span class="work-source"><i>Website for Prairie Rose Arena, a year-round equine event center and horse motel in Elkhart, Iowa</i></span></a></li>
+        <li><a href="https://regreenbigbend.com/"><img class="work-image" src="/img/projects/regreen-big-bend.webp" srcset="/img/projects/regreen-big-bend-640.webp 640w, /img/projects/regreen-big-bend.webp 1280w" sizes="(min-width: 56em) min(600px, 50vw - 4.5rem), min(100vw - 3rem, 650px)" width="1280" height="720" loading="lazy" alt="Home page: outlined title and the line Conserving and restoring native habitat in Texas&#39;s Big Bend"><span class="work-line"><cite class="work-title">ReGreen Big Bend</cite><time datetime="2024-06">Jun 2024</time></span><span class="work-source"><i>Website for ReGreen Big Bend, an organization conserving and restoring native desert habitat in Texas’s Big Bend</i></span></a></li>
       </ol>
     </section>
     <section class="projects" aria-labelledby="personal-works">
       <h2 id="personal-works">Personal Projects</h2>
-      <ol class="works">
+      <ol class="works" role="list">
         <li><a href="https://github.com/samfeldstein/planner"><span class="work-line"><cite class="work-title">Planner</cite><time datetime="2026-11">Nov 2026</time></span><span class="work-source"><i>An installable, offline iPhone PWA for todos. No accounts, no backend, no dependencies</i></span></a></li>
         <li><a href="https://notebook-site.samfeldstein.workers.dev"><span class="work-line"><cite class="work-title">Notebook Site</cite><time datetime="2026-10">Oct 2026</time></span><span class="work-source"><i>A read-only website and template for my Markdown notebook</i></span></a></li>
         <li><a href="https://github.com/samfeldstein/rss-feeds"><span class="work-line"><cite class="work-title">RSS Feeds</cite><time datetime="2026-10">Oct 2026</time></span><span class="work-source"><i>Collection of rss feeds for sites that don’t have them</i></span></a></li>
@@ -677,7 +703,7 @@ a[href^="mailto:"]:not(.toc a)::after,
 <!-- /shared:copyright -->
   </div>
 </footer>
-<script type="module" src="/js/quote.js?v=9ee267ba"></script>
+<script type="module" src="/js/quote.js?v=fa5ff6c6"></script>
 <!-- /shared:endmatter -->
 </body>
 </html>

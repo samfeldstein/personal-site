@@ -5,7 +5,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
 import { fileURLToPath } from "node:url";
-import { addSkills, applyLinkToRepo, applyStarted, undecidedHomepages, displayName, filterRepos, missingSkills, skillsIn, inFont, splitApproved, formatDate, renderEntries, renderEntry, renderSections, sectionOf, replaceBlock, repoLink } from "../scripts/projects.mjs";
+import { addSkills, applyLinkToRepo, applyStarted, badStarted, undecidedHomepages, displayName, filterRepos, missingSkills, skillsIn, inFont, splitApproved, formatDate, renderEntries, renderEntry, renderSections, sectionOf, replaceBlock, repoLink } from "../scripts/projects.mjs";
 
 const script = fileURLToPath(new URL("../scripts/projects.mjs", import.meta.url));
 
@@ -131,10 +131,10 @@ test("--file run writes the list into the page", () => {
     assert.equal(
       html,
       "<!doctype html>\n<ol>\n      <!-- projects -->\n" +
-        '    <section class="projects projects-grid" aria-labelledby="professional-works">\n      <h2 id="professional-works">Professional Projects</h2>\n      <ol class="works">\n' +
+        '    <section class="projects projects-grid" aria-labelledby="professional-works">\n      <h2 id="professional-works">Professional Projects</h2>\n      <ol class="works" role="list">\n' +
         '        <li><a href="https://github.com/samfeldstein/thing"><span class="work-line"><cite class="work-title">First Website</cite><time datetime="2019-05">May 2019</time></span><span class="work-source"><span class="work-type">Source code</span></span></a></li>\n' +
         '      </ol>\n    </section>\n' +
-        '    <section class="projects" aria-labelledby="personal-works">\n      <h2 id="personal-works">Personal Projects</h2>\n      <ol class="works">\n' +
+        '    <section class="projects" aria-labelledby="personal-works">\n      <h2 id="personal-works">Personal Projects</h2>\n      <ol class="works" role="list">\n' +
         '        <li><a href="https://rss.example/"><span class="work-line"><cite class="work-title">RSS Feeds</cite><time datetime="2024-08">Aug 2024</time></span><span class="work-source"><i>A thing</i></span></a></li>\n' +
         '      </ol>\n    </section>\n' +
         "      <!-- /projects -->\n</ol>\n",
@@ -256,7 +256,7 @@ test("undecidedHomepages finds homepages in neither sites nor linkToRepo", () =>
 
 test("renderEntry puts the image first in the link, only when one is given", () => {
   const out = renderEntry(repo({ name: "x" }), "X", { image: "x.webp", alt: 'A "shot"' });
-  assert.match(out, /<a href="[^"]+"><img class="work-image" src="\/img\/projects\/x\.webp" width="1280" height="720" loading="lazy" alt="A &quot;shot&quot;"><span class="work-line">/);
+  assert.match(out, /<a href="[^"]+"><img class="work-image" src="\/img\/projects\/x\.webp" srcset="\/img\/projects\/x-640\.webp 640w, \/img\/projects\/x\.webp 1280w" sizes="[^"]+" width="1280" height="720" loading="lazy" alt="A &quot;shot&quot;"><span class="work-line">/);
   assert.doesNotMatch(renderEntry(repo({}), "X", {}), /<img/);
   assert.doesNotMatch(renderEntry(repo({}), "X", { image: "", alt: "a" }), /<img/);
   assert.doesNotMatch(renderEntry(repo({})), /<img/);
@@ -266,8 +266,8 @@ test("renderSections writes Professional then Personal, skips an empty one, and 
   const repos = [repo({ name: "a" }), repo({ name: "b" }), repo({ name: "c" })];
   const out = renderSections(repos, {}, { a: "personal", b: "professional" });
   assert.ok(out.indexOf('id="professional-works">Professional') < out.indexOf('id="personal-works">Personal'));
-  assert.match(out, /<h2 id="professional-works">Professional Projects<\/h2>\n      <ol class="works">\n.*<cite class="work-title">B<\/cite>.*\n      <\/ol>/);
-  assert.match(out, /<h2 id="personal-works">Personal Projects<\/h2>\n      <ol class="works">\n.*">A<\/cite>.*\n.*">C<\/cite>/);
+  assert.match(out, /<h2 id="professional-works">Professional Projects<\/h2>\n      <ol class="works" role="list">\n.*<cite class="work-title">B<\/cite>.*\n      <\/ol>/);
+  assert.match(out, /<h2 id="personal-works">Personal Projects<\/h2>\n      <ol class="works" role="list">\n.*">A<\/cite>.*\n.*">C<\/cite>/);
   assert.doesNotMatch(renderSections([repo({ name: "a" })], {}, { a: "professional" }), /Personal Projects/);
   assert.match(out, /<section class="projects projects-grid" aria-labelledby="professional-works">/);
   assert.match(out, /<section class="projects" aria-labelledby="personal-works">/);
@@ -305,4 +305,10 @@ test("--file run sorts within sections, adds images from images and others, warn
   } finally {
     rmSync(dir, { recursive: true, force: true });
   }
+});
+
+test("badStarted lists others without a real YYYY-MM date", () => {
+  const others = [{ name: "fine", started: "2024-06" }, { name: "none" }, { name: "month", started: "2024-13" }, { name: "text", started: "soon" }];
+  assert.deepEqual(badStarted(others).map((o) => o.name), ["none", "month", "text"]);
+  assert.deepEqual(badStarted(), []);
 });

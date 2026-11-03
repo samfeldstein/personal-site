@@ -22,11 +22,11 @@
   "images": {
     "postoley-dance-ensemble-sample": {
       "image": "postoley-dance-ensemble.webp",
-      "alt": "Postoley Dance Ensemble home page: illuminated headings above photos of folk dancers"
+      "alt": "Home page: illuminated headings above photos of folk dancers"
     },
     "presswork-web-co": {
       "image": "presswork-web-co.webp",
-      "alt": "Presswork home page: Your website, fully managed"
+      "alt": "Home page: Your website, fully managed"
     }
   },
   "started": {
@@ -53,7 +53,7 @@
       "section": "professional",
       "description": "Website for ReGreen Big Bend, an organization conserving and restoring native desert habitat in Texas's Big Bend",
       "image": "regreen-big-bend.webp",
-      "alt": "ReGreen Big Bend home page: outlined title and the line Conserving and restoring native habitat in Texas's Big Bend"
+      "alt": "Home page: outlined title and the line Conserving and restoring native habitat in Texas's Big Bend"
     },
     {
       "name": "Prairie Rose Arena",
@@ -61,7 +61,7 @@
       "started": "2024-07",
       "section": "professional",
       "image": "prairie-rose-arena.webp",
-      "alt": "Prairie Rose Arena home page with boot and saddle drawings",
+      "alt": "Home page with boot and saddle drawings",
       "description": "Website for Prairie Rose Arena, a year-round equine event center and horse motel in Elkhart, Iowa"
     }
   ],

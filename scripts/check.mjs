@@ -28,10 +28,14 @@
     - each page's gzipped HTML (with its inline CSS) + linked JS stays within its budget in
       facts.json "sizeBudgetKB" (a "default" and optional per-path overrides)
 
-    - each img.work-image has alt, width, height, loading="lazy" and a root-relative
-      .webp under /img/projects/ that exists; no file there goes unused or tops 80 KB
-      (images are not part of the gzipped size budget)
+    - each img.work-image has alt, width, height, loading="lazy", srcset, sizes and a
+      root-relative .webp under /img/projects/ that exists; no file there goes unused
+      or tops 80 KB (images are not part of the gzipped size budget)
     - each <section aria-labelledby> holds exactly one <h2>, the one it points at
+    - tags are balanced, links don't nest, and no tag repeats an attribute
+    - the only comments are the structural markers (page, shared, gallery, projects)
+    - project names, image and alt pairs, and dates match scripts/projects.json
+    - the skills line has no "and"
 
   Usage: node scripts/check.mjs [--root site] [--shared shared]
 */
@@ -40,6 +44,7 @@ import { join, relative, resolve, dirname } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { gzipSync } from "node:zlib";
 import { sync } from "./sync.mjs";
+import { esc } from "./projects.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, "..");
@@ -224,6 +229,74 @@ export function hostProblems(text, allowed) {
   return [...new Set(problems)];
 }
 
+const VOID_TAGS = new Set(["area", "base", "br", "col", "embed", "hr", "img", "input", "link", "meta", "source", "track", "wbr"]);
+const OPTIONAL_CLOSE = new Set(["li", "p", "dt", "dd", "option", "optgroup", "tr", "td", "th", "thead", "tbody", "tfoot", "colgroup", "caption"]);
+
+/** Unbalanced tags, a link inside a link, and a repeated attribute (the parser would keep only the last). */
+export function markupProblems(markup) {
+  const found = [];
+  const open = [];
+  for (const m of markup.matchAll(/<(\/?)([a-zA-Z][\w-]*)((?:"[^"]*"|'[^']*'|[^'">])*)>/g)) {
+    const [, closing, rawName, attrs] = m;
+    const name = rawName.toLowerCase();
+    if (closing) {
+      const at = open.lastIndexOf(name);
+      if (at === -1) {
+        found.push(`stray </${name}>`);
+        continue;
+      }
+      for (const left of open.splice(at).slice(1)) if (!OPTIONAL_CLOSE.has(left)) found.push(`<${left}> isn't closed before </${name}>`);
+      continue;
+    }
+    const seen = new Set();
+    for (const a of attrs.matchAll(/([^\s=\/"'>]+)(?:\s*=\s*(?:"[^"]*"|'[^']*'|[^\s"'>]+))?/g)) {
+      const attr = a[1].toLowerCase();
+      if (seen.has(attr)) found.push(`<${name}> repeats the ${attr} attribute`);
+      seen.add(attr);
+    }
+    if (VOID_TAGS.has(name) || /\/\s*$/.test(attrs)) continue;
+    if (name === "a" && open.includes("a")) found.push("a link inside a link");
+    open.push(name);
+  }
+  for (const left of open) if (!OPTIONAL_CLOSE.has(left)) found.push(`<${left}> is never closed`);
+  return found;
+}
+
+/** Only the structural markers may stay in a page, because nothing strips comments. */
+export function commentProblems(html) {
+  const text = html.replace(/<(script|style)\b[^>]*>[\s\S]*?<\/\1>/gi, "");
+  return [...text.matchAll(/<!--([\s\S]*?)-->/g)]
+    .filter((m) => !/^\s*(?:page:|\/?shared:[\w-]+\s*$|\/?gallery\s*$|\/?projects\s*$)/.test(m[1]))
+    .map((m) => `comment "${m[1].trim().slice(0, 40)}" isn't a structural marker; put explanations in docs/`);
+}
+
+/** Skills are plain names separated by commas, with no "and" before the last one. */
+export function skillsProblems(html) {
+  const line = html.match(/<section class="skills"[\s\S]*?<p>([^<]*)<\/p>/)?.[1] ?? "";
+  return /(?:^|[\s,])and\s/i.test(line) ? ['the skills line has "and" in it; separate names with commas only'] : [];
+}
+
+/** The list between the projects markers must match what the owner approved in projects.json. */
+export function projectListProblems(html, config) {
+  const block = html.match(/<!-- projects -->([\s\S]*?)<!-- \/projects -->/)?.[1];
+  if (block === undefined) return [];
+  const others = config.others ?? [];
+  const names = new Set([...Object.values(config.names ?? {}), ...others.map((o) => o.name)].map(esc));
+  const pictures = new Set([...Object.values(config.images ?? {}), ...others.filter((o) => o.image)].map((p) => `${p.image}|${esc(p.alt ?? "")}`));
+  const found = [];
+  for (const m of block.matchAll(/<cite class="work-title">([^<]*)<\/cite>/g)) {
+    if (!names.has(m[1])) found.push(`project "${m[1]}" isn't an approved name in scripts/projects.json`);
+  }
+  for (const t of tags(block)) {
+    if (t.name === "img" && /(?:^|\s)work-image(?:\s|$)/.test(t.attrs.class ?? "")) {
+      const file = (t.attrs.src ?? "").split("/").pop();
+      if (!pictures.has(`${file}|${t.attrs.alt ?? ""}`)) found.push(`image ${file} and its alt text don't match scripts/projects.json`);
+    }
+    if (t.name === "time" && !/^\d{4}-(0[1-9]|1[0-2])$/.test(t.attrs.datetime ?? "")) found.push(`project date datetime="${t.attrs.datetime ?? ""}" isn't YYYY-MM`);
+  }
+  return found;
+}
+
 const ID_REFERENCES = ["for", "aria-labelledby", "aria-describedby", "aria-controls", "aria-owns"];
 
 export function check({ root, shared }) {
@@ -244,6 +317,7 @@ export function check({ root, shared }) {
   const idsByPath = new Map();
   const parsed = new Map();
   const referencedProjectImages = new Set();
+  const projectsConfig = JSON.parse(readFileSync(join(here, "projects.json"), "utf8"));
 
   for (const page of pages) {
     const html = readFileSync(page.file, "utf8");
@@ -323,10 +397,15 @@ export function check({ root, shared }) {
         if (!(a.alt ?? "").trim()) fail(label, `<img class="work-image" src="${src}"> needs non-empty alt text`);
         for (const dim of ["width", "height"]) if (!/^[1-9]\d*$/.test(a[dim] ?? "")) fail(label, `<img class="work-image" src="${src}"> needs a ${dim} attribute`);
         if (a.loading !== "lazy") fail(label, `<img class="work-image" src="${src}"> needs loading="lazy"`);
+        for (const attr of ["srcset", "sizes"]) if (!(a[attr] ?? "").trim()) fail(label, `<img class="work-image" src="${src}"> needs a ${attr} attribute`);
         if (!/^\/img\/projects\/[^/?#]+\.webp$/.test(src)) fail(label, `<img class="work-image" src="${src}"> must be a root-relative .webp under /img/projects/`);
         else {
           referencedProjectImages.add(src.slice(1));
           if (!exists(src.slice(1))) fail(label, `<img class="work-image" src="${src}"> doesn't exist`);
+        }
+        for (const part of (a.srcset ?? "").split(",")) {
+          const file = part.trim().split(/\s+/)[0];
+          if (file.startsWith("/img/projects/")) referencedProjectImages.add(file.slice(1));
         }
       }
       if (t.name === "a" && a.href !== undefined) checkUrl(label, a.href, page.path, "link");
@@ -338,6 +417,7 @@ export function check({ root, shared }) {
     }
     if (h1 !== 1) fail(label, `needs exactly one <h1> (found ${h1})`);
     if (mains !== 1) fail(label, `needs exactly one <main> (found ${mains})`);
+    for (const problem of [...markupProblems(markup), ...commentProblems(html), ...skillsProblems(html), ...projectListProblems(html, projectsConfig)]) fail(label, problem);
 
     for (const m of markup.replace(/<style[\s\S]*?<\/style>/gi, "").matchAll(/[\w.+-]+@[\w-]+\.[\w.-]+/g)) {
       const address = m[0].replace(/\.+$/, "");
@@ -419,6 +499,8 @@ export function check({ root, shared }) {
     for (const t of tags(simplify(html).markup)) {
       const url = t.name === "link" ? t.attrs.href : t.name === "form" ? t.attrs.action : t.name === "a" || t.name === "meta" ? undefined : t.attrs.src;
       if (url && /^(?:https?:)?\/\//i.test(url.trim())) for (const m of hostProblems(url, allowedHosts)) fail(label, `<${t.name}> ${m}`);
+      for (const attr of ["srcset", "imagesrcset", "poster"]) if (t.attrs[attr]) for (const m of hostProblems(t.attrs[attr], allowedHosts)) fail(label, `<${t.name}> ${attr} ${m}`);
+      if (t.attrs.style) for (const m of cssHostProblems(t.attrs.style.replace(/&quot;/g, '"'), allowedHosts)) fail(label, `<${t.name}> style ${m}`);
     }
   }
 

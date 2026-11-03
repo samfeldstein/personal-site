@@ -11,6 +11,9 @@
 /img/photos/*
   Cache-Control: public, max-age=2592000
 
+/img/projects/*
+  Cache-Control: public, max-age=604800
+
 /static/images/*
   Cache-Control: public, max-age=86400
 

@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 /*
-  screenshots.mjs: makes the 1280x720 WebP screenshots in site/img/projects/.
+  screenshots.mjs: makes the 1280x720 and 640x360 WebP screenshots in site/img/projects/.
 
     node scripts/screenshots.mjs            (all)
     node scripts/screenshots.mjs presswork   (only names containing the text)
@@ -47,6 +47,7 @@ for (const [name, url] of Object.entries(SITES)) {
     ], { stdio: "ignore", timeout: 60000 });
     const file = join(OUT, `${name}.webp`);
     await sharp(png).resize(1280, 720, { fit: "cover", position: "top" }).webp({ quality: 60, effort: 6 }).toFile(file);
+    await sharp(png).resize(640, 360, { fit: "cover", position: "top" }).webp({ quality: 60, effort: 6 }).toFile(join(OUT, `${name}-640.webp`));
     const kb = (statSync(file).size / 1024).toFixed(1);
     console.log(`${name}.webp ${kb} KB${kb > 60 ? "  (over 60 KB)" : ""}`);
   } catch (e) {

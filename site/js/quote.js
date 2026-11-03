@@ -250,7 +250,7 @@ const quotes = [
     speaker: "Martin Mull"
   },
   {
-    quote: "Make the se­cret a lot more trou­ble than the trick seems worth.",
+    quote: "Make the secret a lot more trouble than the trick seems worth.",
     speaker: "Teller"
   },
   {

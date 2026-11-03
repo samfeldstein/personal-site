@@ -44,7 +44,7 @@
   color: var(--ink-faded);
 }
 
-@media (min-width: 48em) {
+@media (min-width: 56em) {
   .projects-grid {
     width: min(80rem, 100vw - 4rem);
     margin-inline: calc(50% - min(40rem, 50vw - 2rem));

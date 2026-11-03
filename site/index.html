@@ -52,7 +52,6 @@ body {
 img {
   max-width: 100%;
   height: auto;
-  animation: fadeIn 0.5s ease-in forwards;
 }
 
 figure {
@@ -421,6 +420,10 @@ a[href^="http"]:not(.toc a, .works a, .work, [href^="https://samfeldstein.xyz"])
   opacity: 0.9;
 }
 
+.works a[href^="http"]:not([href^="https://samfeldstein.xyz"]) .work-source::after {
+  display: inline;
+}
+
 a[href^="mailto:"]:not(.toc a)::after,
 .toc a[href^="mailto:"] > span::after {
   content: "" / ", email";
@@ -435,6 +438,14 @@ a[href^="mailto:"]:not(.toc a)::after,
 
 .toc a[href^="mailto:"] > span::after {
   content: "" / "";
+}
+
+@media (forced-colors: active) {
+  a[href^="mailto:"]:not(.toc a)::after,
+  .toc a[href^="mailto:"] > span::after {
+    forced-color-adjust: none;
+    background: LinkText;
+  }
 }
 
 .epigraph-page[hidden] {
@@ -517,6 +528,21 @@ a[href^="mailto:"]:not(.toc a)::after,
 .works a:hover .work-title::after,
 .works a:focus-visible .work-title::after {
   border-bottom-color: currentColor;
+}
+
+@media print {
+  :root {
+    color-scheme: light;
+  }
+  .page,
+  .colophon-page {
+    min-height: 0;
+  }
+  .works li,
+  .epigraph,
+  .pagespeed {
+    break-inside: avoid;
+  }
 }
 .cover {
   box-sizing: border-box;
@@ -665,7 +691,7 @@ a[href^="mailto:"]:not(.toc a)::after,
 <!-- /shared:copyright -->
   </div>
 </footer>
-<script type="module" src="/js/quote.js?v=9ee267ba"></script>
+<script type="module" src="/js/quote.js?v=fa5ff6c6"></script>
 <!-- /shared:endmatter -->
 </body>
 </html>

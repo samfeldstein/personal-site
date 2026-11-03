@@ -57,6 +57,8 @@ const SMALL = new Set(["a", "an", "and", "the", "of", "for", "to", "in", "on"]);
 const MAIN_LANGUAGE = 0.2;
 const LANGUAGE_SKILL = { Shell: "Bash", SCSS: "Sass" };
 const MARKERS = /(<!-- projects -->)[\s\S]*?(\n[ \t]*<!-- \/projects -->)/;
+const YEAR_MONTH = /^\d{4}-(0[1-9]|1[0-2])$/;
+const IMAGE_SIZES = "(min-width: 56em) min(600px, 50vw - 4.5rem), min(100vw - 3rem, 650px)";
 
 export const esc = (s) =>
   String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;").replace(/'/g, "&#39;");
@@ -69,8 +71,12 @@ export function filterRepos(repos) {
 
 export function applyStarted(repos, started = {}) {
   return repos.map((repo) =>
-    /^\d{4}-\d{2}$/.test(started[repo?.name] ?? "") ? { ...repo, created_at: `${started[repo.name]}-01T00:00:00Z` } : repo,
+    YEAR_MONTH.test(started[repo?.name] ?? "") ? { ...repo, created_at: `${started[repo.name]}-01T00:00:00Z` } : repo,
   );
+}
+
+export function badStarted(others = []) {
+  return others.filter((other) => !YEAR_MONTH.test(other.started ?? ""));
 }
 
 export function skillsIn(html) {
@@ -171,11 +177,13 @@ export function sectionOf(key, sections = {}) {
   return SECTIONS.some((s) => s.key === sections[key]) ? sections[key] : "personal";
 }
 
+export const smallImage = (file) => file.replace(/\.webp$/, "-640.webp");
+
 export function renderEntry(repo, name = displayName(repo.name), picture = null) {
   const date = formatDate(repo.created_at);
   const desc = inFont(repo.description ?? "").replace(/'/g, "\u2019").replace(/[.\s]+$/, "");
   const type = /^https?:\/\//i.test(repo.homepage ?? "") ? "Website" : "Source code";
-  const image = picture?.image ? `<img class="work-image" src="/img/projects/${esc(picture.image)}" width="1280" height="720" loading="lazy" alt="${esc(picture.alt ?? "")}">` : "";
+  const image = picture?.image ? `<img class="work-image" src="/img/projects/${esc(picture.image)}" srcset="/img/projects/${esc(smallImage(picture.image))} 640w, /img/projects/${esc(picture.image)} 1280w" sizes="${IMAGE_SIZES}" width="1280" height="720" loading="lazy" alt="${esc(picture.alt ?? "")}">` : "";
   return `        <li><a href="${esc(repoLink(repo))}">${image}<span class="work-line"><cite class="work-title">${esc(name)}</cite><time datetime="${date.datetime}">${date.text}</time></span><span class="work-source">${desc ? `<i>${esc(desc)}</i>` : `<span class="work-type">${type}</span>`}</span></a></li>`;
 }
 
@@ -188,7 +196,7 @@ export function renderSections(repos, names = {}, sections = {}, images = {}) {
     .filter((section) => section.repos.length)
     .map(
       ({ key, title, repos }) =>
-        `    <section class="${key === "professional" ? "projects projects-grid" : "projects"}" aria-labelledby="${key}-works">\n      <h2 id="${key}-works">${title}</h2>\n      <ol class="works">\n${renderEntries(repos, names, images)}\n      </ol>\n    </section>`,
+        `    <section class="${key === "professional" ? "projects projects-grid" : "projects"}" aria-labelledby="${key}-works">\n      <h2 id="${key}-works">${title}</h2>\n      <ol class="works" role="list">\n${renderEntries(repos, names, images)}\n      </ol>\n    </section>`,
     )
     .join("\n");
 }
@@ -306,6 +314,11 @@ if (process.argv[1] && import.meta.url === pathToFileURL(process.argv[1]).href) 
     process.exit(0);
   }
 
+  const undated = badStarted(config.others);
+  if (undated.length) {
+    console.error(`projects: ${undated.map((other) => other.name).join(", ")} in "others" needs a "started" of YYYY-MM; the page is unchanged`);
+    process.exit(1);
+  }
   const extras = (config.others ?? []).map((other) => ({ name: other.name, homepage: other.url, description: other.description, created_at: `${other.started}-01T00:00:00Z` }));
   const sections = { ...(config.sections ?? {}) };
   const images = { ...(config.images ?? {}) };

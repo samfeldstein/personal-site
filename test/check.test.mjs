@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { appendFileSync, cpSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { check, cssHostProblems, cssProblems, hostProblems, maskProblems, projectLinkProblems, scriptProblems } from "../scripts/check.mjs";
+import { check, commentProblems, cssHostProblems, cssProblems, hostProblems, markupProblems, maskProblems, projectLinkProblems, projectListProblems, scriptProblems, skillsProblems } from "../scripts/check.mjs";
 import { sync } from "../scripts/sync.mjs";
 
 test("cssProblems accepts balanced CSS, including braces in strings and comments", () => {
@@ -238,7 +238,7 @@ test("check reports invalid JSON data scripts, third-party CSS, and uncovered ch
   }
 });
 
-const IMG = '<img class="work-image" src="/img/projects/presswork-web-co.webp" width="1280" height="720" loading="lazy" alt="A page">';
+const IMG = '<img class="work-image" src="/img/projects/presswork-web-co.webp" srcset="/img/projects/presswork-web-co-640.webp 640w, /img/projects/presswork-web-co.webp 1280w" sizes="100vw" width="1280" height="720" loading="lazy" alt="A page">';
 
 function checkWithMain(inject, prepare) {
   const dir = copyOfSite();
@@ -263,12 +263,14 @@ test("check reports work images with missing alt, size, loading, a bad path or a
     IMG.replace(' width="1280"', ""),
     IMG.replace(' height="720"', ""),
     IMG.replace(' loading="lazy"', ""),
+    IMG.replace(/ srcset="[^"]*"/, ""),
+    IMG.replace(' sizes="100vw"', ""),
     IMG.replace("/img/projects/presswork-web-co.webp", "/img/projects/personal-site.png"),
     IMG.replace("/img/projects/presswork-web-co.webp", "img/projects/presswork-web-co.webp"),
     IMG.replace("presswork-web-co.webp", "nope.webp"),
   ];
   const problems = checkWithMain(`<p>${bad.join("")}</p>`);
-  for (const re of [/non-empty alt/, /needs a width/, /needs a height/, /needs loading="lazy"/, /must be a root-relative \.webp/, /nope\.webp"> doesn't exist/]) {
+  for (const re of [/non-empty alt/, /needs a width/, /needs a height/, /needs loading="lazy"/, /needs a srcset/, /needs a sizes/, /must be a root-relative \.webp/, /nope\.webp"> doesn't exist/]) {
     assert.ok(problems.some((p) => re.test(p)), `${re}\n${problems.join("\n")}`);
   }
   assert.equal(problems.filter((p) => /must be a root-relative/.test(p)).length, 2, problems.join("\n"));
@@ -288,6 +290,58 @@ test("project images do not count toward the gzipped size budget", () => {
     writeFileSync(join(dir, "site/img/projects/presswork-web-co.webp"), Buffer.alloc(70 * 1024, 1));
   });
   assert.ok(!problems.some((p) => /budget/.test(p)), problems.join("\n"));
+});
+
+test("markupProblems finds unclosed tags, stray closers, nested links and repeated attributes", () => {
+  assert.deepEqual(markupProblems('<ol><li><a href="/">a</a><li><img src="x" alt=""></ol><svg><path d="M0"/></svg><p>one<p>two'), []);
+  assert.deepEqual(markupProblems("<section><ol><li>a</section>"), ["<ol> isn't closed before </section>"]);
+  assert.deepEqual(markupProblems("<ol>"), ["<ol> is never closed"]);
+  assert.deepEqual(markupProblems("</div>"), ["stray </div>"]);
+  assert.deepEqual(markupProblems('<a href="/"><a href="/x">b</a></a>'), ["a link inside a link"]);
+  assert.deepEqual(markupProblems('<img src="a" src="b" alt="">'), ["<img> repeats the src attribute"]);
+});
+
+test("commentProblems allows only the structural markers", () => {
+  const fine = '<!-- page: {"title":"x"} --><!-- shared:head --><!-- /shared:head --><!-- gallery --><!-- /gallery --><!-- projects --><!-- /projects --><style>/* a */</style><script>"<!-- in code -->"</script>';
+  assert.deepEqual(commentProblems(fine), []);
+  assert.equal(commentProblems("<!-- a note -->").length, 1);
+  assert.equal(commentProblems("<!-- projects were here -->").length, 1);
+});
+
+test('skillsProblems flags "and" in the skills line only', () => {
+  const page = (line) => `<p>this and that</p><section class="skills" aria-labelledby="s"><h2 id="s">Skills</h2><p>${line}</p></section>`;
+  assert.deepEqual(skillsProblems(page("HTML, CSS, Android")), []);
+  assert.equal(skillsProblems(page("HTML, CSS, and Sass")).length, 1);
+  assert.equal(skillsProblems(page("HTML, CSS and Sass")).length, 1);
+});
+
+test("projectListProblems checks names, image and alt pairs, and dates against projects.json", () => {
+  const config = { names: { a: "Approved" }, images: { a: { image: "a.webp", alt: "It's a page" } }, others: [{ name: "Other", image: "o.webp", alt: "Other page" }] };
+  const block = (inner) => `<!-- projects -->${inner}<!-- /projects -->`;
+  const good = '<img class="work-image" src="/img/projects/a.webp" alt="It&#39;s a page"><cite class="work-title">Approved</cite><time datetime="2024-03">Mar 2024</time><cite class="work-title">Other</cite>';
+  assert.deepEqual(projectListProblems(block(good), config), []);
+  assert.deepEqual(projectListProblems("<p>no list here</p>", config), []);
+  assert.match(projectListProblems(block('<cite class="work-title">Sneaky</cite>'), config)[0], /isn't an approved name/);
+  assert.match(projectListProblems(block('<img class="work-image" src="/img/projects/a.webp" alt="Changed">'), config)[0], /don't match/);
+  assert.match(projectListProblems(block('<time datetime="NaN-NaN">undefined NaN</time>'), config)[0], /isn't YYYY-MM/);
+});
+
+test("check reports third-party hosts in srcset, poster and style attributes", () => {
+  const problems = checkWithMain('<img src="/favicon.svg" srcset="https://a.example.com/x.png 2x" alt=""><video poster="https://b.example.com/p.png"></video><p style="background:url(https://c.example.com/x.png)">x</p>');
+  for (const host of ["a.example.com", "b.example.com", "c.example.com"]) assert.ok(problems.some((p) => p.includes(host)), `${host}\n${problems.join("\n")}`);
+});
+
+test("check reports broken markup, a stray comment and an unapproved project on the page", () => {
+  const dir = copyOfSite();
+  try {
+    const page = join(dir, "site/code/index.html");
+    const html = readFileSync(page, "utf8");
+    writeFileSync(page, html.replace("</ol>", "").replace(/<main\b[^>]*>/, (open) => `${open}<!-- a note -->`).replace('<cite class="work-title">Planner</cite>', '<cite class="work-title">Sneaky</cite>'));
+    const problems = check({ root: join(dir, "site"), shared: join(dir, "shared") });
+    for (const re of [/<ol> isn't closed/, /comment "a note"/, /"Sneaky" isn't an approved name/]) assert.ok(problems.some((p) => re.test(p)), `${re}\n${problems.join("\n")}`);
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });
 
 test("check wants exactly one h2 in a labelled section, and it must be the labelling one", () => {
