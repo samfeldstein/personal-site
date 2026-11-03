@@ -237,3 +237,65 @@ test("check reports invalid JSON data scripts, third-party CSS, and uncovered ch
     rmSync(dir, { recursive: true, force: true });
   }
 });
+
+const IMG = '<img class="work-image" src="/img/projects/presswork-web-co.webp" width="1280" height="720" loading="lazy" alt="A page">';
+
+function checkWithMain(inject, prepare) {
+  const dir = copyOfSite();
+  try {
+    prepare?.(dir);
+    const page = join(dir, "site/code/index.html");
+    writeFileSync(page, readFileSync(page, "utf8").replace(/<main\b[^>]*>/, (open) => `${open}${inject}`));
+    return check({ root: join(dir, "site"), shared: join(dir, "shared") });
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
+}
+
+test("check accepts a well-formed work image", () => {
+  const problems = checkWithMain(`<p>${IMG}</p>`);
+  assert.ok(!problems.some((p) => /work-image/.test(p)), problems.join("\n"));
+});
+
+test("check reports work images with missing alt, size, loading, a bad path or a missing file", () => {
+  const bad = [
+    IMG.replace('alt="A page"', 'alt=""'),
+    IMG.replace(' width="1280"', ""),
+    IMG.replace(' height="720"', ""),
+    IMG.replace(' loading="lazy"', ""),
+    IMG.replace("/img/projects/presswork-web-co.webp", "/img/projects/personal-site.png"),
+    IMG.replace("/img/projects/presswork-web-co.webp", "img/projects/presswork-web-co.webp"),
+    IMG.replace("presswork-web-co.webp", "nope.webp"),
+  ];
+  const problems = checkWithMain(`<p>${bad.join("")}</p>`);
+  for (const re of [/non-empty alt/, /needs a width/, /needs a height/, /needs loading="lazy"/, /must be a root-relative \.webp/, /nope\.webp"> doesn't exist/]) {
+    assert.ok(problems.some((p) => re.test(p)), `${re}\n${problems.join("\n")}`);
+  }
+  assert.equal(problems.filter((p) => /must be a root-relative/.test(p)).length, 2, problems.join("\n"));
+});
+
+test("check reports an unused or oversized project image", () => {
+  const problems = checkWithMain(`<p>${IMG}</p>`, (dir) => {
+    writeFileSync(join(dir, "site/img/projects/orphan.webp"), "x");
+    writeFileSync(join(dir, "site/img/projects/presswork-web-co.webp"), Buffer.alloc(81 * 1024));
+  });
+  assert.ok(problems.some((p) => /img\/projects\/orphan\.webp: isn't used/.test(p)), problems.join("\n"));
+  assert.ok(problems.some((p) => /img\/projects\/presswork-web-co\.webp: 81\.0 KB is over the 80 KB/.test(p)), problems.join("\n"));
+});
+
+test("project images do not count toward the gzipped size budget", () => {
+  const problems = checkWithMain(`<p>${IMG}</p>`, (dir) => {
+    writeFileSync(join(dir, "site/img/projects/presswork-web-co.webp"), Buffer.alloc(70 * 1024, 1));
+  });
+  assert.ok(!problems.some((p) => /budget/.test(p)), problems.join("\n"));
+});
+
+test("check wants exactly one h2 in a labelled section, and it must be the labelling one", () => {
+  const problems = checkWithMain(
+    '<section aria-labelledby="solo-a"><h2 id="solo-a">A</h2><h2 id="solo-b">B</h2></section><section aria-labelledby="solo-c"><p>none</p></section><section aria-labelledby="solo-d"><h2 id="solo-e">E</h2></section><p id="dup">1</p><p id="dup">2</p>',
+  );
+  assert.ok(problems.some((p) => /solo-a.*exactly one <h2> \(found 2\)/.test(p)), problems.join("\n"));
+  assert.ok(problems.some((p) => /solo-c.*exactly one <h2> \(found 0\)/.test(p)), problems.join("\n"));
+  assert.ok(problems.some((p) => /solo-d.*isn't its <h2>/.test(p)), problems.join("\n"));
+  assert.ok(problems.some((p) => /duplicate id "dup"/.test(p)), problems.join("\n"));
+});

@@ -28,9 +28,14 @@
     - each page's gzipped HTML (with its inline CSS) + linked JS stays within its budget in
       facts.json "sizeBudgetKB" (a "default" and optional per-path overrides)
 
+    - each img.work-image has alt, width, height, loading="lazy" and a root-relative
+      .webp under /img/projects/ that exists; no file there goes unused or tops 80 KB
+      (images are not part of the gzipped size budget)
+    - each <section aria-labelledby> holds exactly one <h2>, the one it points at
+
   Usage: node scripts/check.mjs [--root site] [--shared shared]
 */
-import { readFileSync, existsSync, readdirSync } from "node:fs";
+import { readFileSync, existsSync, readdirSync, statSync } from "node:fs";
 import { join, relative, resolve, dirname } from "node:path";
 import { fileURLToPath, pathToFileURL } from "node:url";
 import { gzipSync } from "node:zlib";
@@ -238,6 +243,7 @@ export function check({ root, shared }) {
   const pageByPath = new Map(pages.map((p) => [p.path, p]));
   const idsByPath = new Map();
   const parsed = new Map();
+  const referencedProjectImages = new Set();
 
   for (const page of pages) {
     const html = readFileSync(page.file, "utf8");
@@ -286,6 +292,13 @@ export function check({ root, shared }) {
     if (!page.meta.description) fail(label, "missing description in the page comment");
 
     let h1 = 0, mains = 0;
+    for (const m of markup.matchAll(/<section\b([^>]*)>([\s\S]*?)<\/section>/gi)) {
+      const labelled = parseAttrs(m[1])["aria-labelledby"];
+      if (labelled === undefined) continue;
+      const h2s = [...m[2].matchAll(/<h2\b([^>]*)>/gi)].map((h) => parseAttrs(h[1]).id);
+      if (h2s.length !== 1) fail(label, `<section aria-labelledby="${labelled}"> needs exactly one <h2> (found ${h2s.length})`);
+      else if (h2s[0] !== labelled) fail(label, `<section aria-labelledby="${labelled}"> points at an id that isn't its <h2>`);
+    }
     const seenIds = new Set();
     for (const t of tags(markup)) {
       const a = t.attrs;
@@ -305,6 +318,17 @@ export function check({ root, shared }) {
         }
       }
       if (t.name === "img" && a.alt === undefined) fail(label, `<img src="${a.src}"> has no alt attribute`);
+      if (t.name === "img" && /(?:^|\s)work-image(?:\s|$)/.test(a.class ?? "")) {
+        const src = a.src ?? "";
+        if (!(a.alt ?? "").trim()) fail(label, `<img class="work-image" src="${src}"> needs non-empty alt text`);
+        for (const dim of ["width", "height"]) if (!/^[1-9]\d*$/.test(a[dim] ?? "")) fail(label, `<img class="work-image" src="${src}"> needs a ${dim} attribute`);
+        if (a.loading !== "lazy") fail(label, `<img class="work-image" src="${src}"> needs loading="lazy"`);
+        if (!/^\/img\/projects\/[^/?#]+\.webp$/.test(src)) fail(label, `<img class="work-image" src="${src}"> must be a root-relative .webp under /img/projects/`);
+        else {
+          referencedProjectImages.add(src.slice(1));
+          if (!exists(src.slice(1))) fail(label, `<img class="work-image" src="${src}"> doesn't exist`);
+        }
+      }
       if (t.name === "a" && a.href !== undefined) checkUrl(label, a.href, page.path, "link");
       if (t.name === "form" && a.action) checkUrl(label, a.action, page.path, "form action");
       if (t.name === "link" && a.href) checkUrl(label, a.href, page.path, `<link ${a.rel}>`);
@@ -409,6 +433,16 @@ export function check({ root, shared }) {
       for (const ref of refs) if (exists(ref.slice(1))) total += gz(readFileSync(join(root, ref)));
       const limit = (budgets[page.path] ?? budgets.default) * 1024;
       if (total > limit) fail(relative(root, page.file), `${(total / 1024).toFixed(1)} KB gzipped (HTML + CSS + JS) is over its ${limit / 1024} KB budget in shared/facts.json "sizeBudgetKB"`);
+    }
+  }
+
+  const projectsDir = join(root, "img/projects");
+  if (existsSync(projectsDir)) {
+    for (const name of readdirSync(projectsDir)) {
+      const rel = `img/projects/${name}`;
+      const size = statSync(join(projectsDir, name)).size;
+      if (!referencedProjectImages.has(rel)) fail(rel, "isn't used by any page; remove it or add it to the Code page");
+      if (size > 80 * 1024) fail(rel, `${(size / 1024).toFixed(1)} KB is over the 80 KB limit for project images`);
     }
   }
 

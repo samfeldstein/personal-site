@@ -2,8 +2,8 @@
 /*
   screenshots.mjs: makes the 1280x720 WebP screenshots in site/img/projects/.
 
-    node scripts/screenshots.mjs            (all ten)
-    node scripts/screenshots.mjs planner    (only names containing the text)
+    node scripts/screenshots.mjs            (all)
+    node scripts/screenshots.mjs presswork   (only names containing the text)
 
   Uses headless Google Chrome (CHROME env var overrides the path) and sharp.
   Light mode, top of page, no cookie-banner handling. Alt text lives in
@@ -22,13 +22,6 @@ const SITES = {
   "postoley-dance-ensemble": "https://postoley.org/",
   "presswork-web-co": "https://presswork.dev/",
   "prairie-rose-arena": "https://prairierosearena.com/",
-  "regreen-big-bend": "https://regreenbigbend.com/",
-  "personal-site": "https://samfeldstein.xyz/",
-  "notebook-site": "https://notebook-site.samfeldstein.workers.dev/",
-  "digital-notebook": "https://notes.samfeldstein.xyz/",
-  "shelf-talkers": "https://shelftalkers.samfeldstein.xyz/",
-  "rss-feeds": "https://github.com/samfeldstein/rss-feeds",
-  "planner": "https://github.com/samfeldstein/planner",
 };
 const CHROME = process.env.CHROME || [
   "/Applications/Google Chrome.app/Contents/MacOS/Google Chrome",
