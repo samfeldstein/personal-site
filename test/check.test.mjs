@@ -353,3 +353,16 @@ test("check wants exactly one h2 in a labelled section, and it must be the label
   assert.ok(problems.some((p) => /solo-d.*isn't its <h2>/.test(p)), problems.join("\n"));
   assert.ok(problems.some((p) => /duplicate id "dup"/.test(p)), problems.join("\n"));
 });
+
+test("check reports popovertarget, list and headers that name missing ids", () => {
+  const problems = checkWithMain('<button popovertarget="no-pop">x</button><input list="no-list" aria-label="x"><table><tr><td headers="no-head">1</td></tr></table>');
+  for (const re of [/popovertarget="no-pop"/, /list="no-list"/, /headers="no-head"/]) assert.ok(problems.some((p) => re.test(p)), problems.join("\n"));
+});
+
+test("check wants a canonical link equal to the page's address", () => {
+  const problems = checkWithMain("", (dir) => {
+    const page = join(dir, "site/code/index.html");
+    writeFileSync(page, readFileSync(page, "utf8").replace('href="https://samfeldstein.xyz/code/"', 'href="https://samfeldstein.xyz/"'));
+  });
+  assert.ok(problems.some((p) => /code\/index\.html: canonical is https:\/\/samfeldstein\.xyz\/, expected https:\/\/samfeldstein\.xyz\/code\//.test(p)), problems.join("\n"));
+});

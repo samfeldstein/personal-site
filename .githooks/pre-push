@@ -1,0 +1,12 @@
+#!/bin/sh
+# Blocks a push when the site's checks fail (static-site-stack skill). The
+# Cloudflare build (npm run build) runs the same checks as a backstop.
+# Turn it on once per clone: git config core.hooksPath .githooks
+#
+# It checks the working tree, not the pushed commits, so commit first. Skip
+# it only in an emergency: git push --no-verify
+set -e
+cd "$(git rev-parse --show-toplevel)"
+node scripts/sync.mjs --check
+node scripts/check.mjs
+node --test test/*.test.mjs

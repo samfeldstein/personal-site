@@ -10,8 +10,10 @@
       <img> alt text, a title and description
     - every link and asset path resolves to a real file (in pages and CSS),
       page links end in "/", and #fragments point at a real id
-    - label for / aria-labelledby / aria-describedby / aria-controls values
+    - label for, popovertarget, list, headers and the aria-* id references
       point at ids that exist on the same page
+    - every indexed page (not noindex, not 404.html) has a canonical link
+      equal to the site URL plus its path
     - CSS (files and inline <style>) has balanced braces and no unterminated
       comments or strings
     - every email address on the site is one of facts.json "emails"
@@ -297,7 +299,7 @@ export function projectListProblems(html, config) {
   return found;
 }
 
-const ID_REFERENCES = ["for", "aria-labelledby", "aria-describedby", "aria-controls", "aria-owns"];
+const ID_REFERENCES = ["for", "aria-labelledby", "aria-describedby", "aria-controls", "aria-owns", "aria-activedescendant", "aria-errormessage", "popovertarget", "list", "headers"];
 
 export function check({ root, shared }) {
   const problems = [];
@@ -364,6 +366,12 @@ export function check({ root, shared }) {
 
     if (!/<html[^>]*\slang="en(-us)?"/i.test(markup)) fail(label, `<html> needs lang="en-us"`);
     if (!page.meta.description) fail(label, "missing description in the page comment");
+    if (!page.meta.noindex && label !== "404.html") {
+      const canonical = [...tags(markup)].find((t) => t.name === "link" && (t.attrs.rel ?? "").split(/\s+/).includes("canonical"));
+      const expected = facts.site.url + page.path;
+      if (!canonical) fail(label, `missing canonical link (expected ${expected})`);
+      else if (canonical.attrs.href !== expected) fail(label, `canonical is ${canonical.attrs.href}, expected ${expected}`);
+    }
 
     let h1 = 0, mains = 0;
     for (const m of markup.matchAll(/<section\b([^>]*)>([\s\S]*?)<\/section>/gi)) {
