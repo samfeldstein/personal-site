@@ -6,7 +6,7 @@ Most of my projects are worked on by Claude Code in the cloud, straight from Git
 
 It runs at login and every day at noon (or when the Mac wakes, if it slept through noon).
 
-- **Repos I already have** anywhere under my home folder, up to five folders deep (for example `~/projects/dev/sites/` and `~/projects/dev/apps/`), are fetched. The default branch (usually main) is pulled only when it's checked out, has no uncommitted changes, and has no commits that aren't on GitHub.
+- **Repos I already have** anywhere under my home folder, up to five folders deep (for example `~/claude/dev/sites/` and `~/claude/dev/apps/`), are fetched. The default branch (usually main) is pulled only when it's checked out, has no uncommitted changes, and has no commits that aren't on GitHub.
 - **Repos not on the Mac yet** are cloned into `~/GitHub`.
 - **Anything it can't pull safely** is left alone and reported: a repo on another branch, uncommitted changes, unpushed commits, or a pull that would overwrite a local file (even a gitignored one like `.env`).
 - **Notifications** appear when it pulls or clones something, and when a new problem appears, not every day for the same one.
