@@ -1,5 +1,10 @@
 # Handoff
 
+## 2026-11-16 (deploy gate, side session; not pushed)
+
+- `.githooks/pre-push` runs sync `--check`, `scripts/check.mjs`, and the tests; `npm run build` (what Workers Builds runs) now runs the tests too. `check.mjs` gained the canonical-link and extra id-reference rules from the `static-site-stack` skill. Contrast stays out (light-dark() tokens).
+- Waiting on Sam: `git config core.hooksPath .githooks`; confirm the Workers Builds build command is `npm run build`; push the throwaway `gate-proof` branch with `--no-verify`, see its preview build fail, then delete it.
+
 Last updated 2026-11-03. Read this, then `CLAUDE.md`, before working on the site.
 
 ## 2026-11-03
