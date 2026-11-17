@@ -21,14 +21,14 @@ const zero = "0".repeat(40);
 const env = Object.fromEntries(Object.entries(process.env).filter(([k]) => !k.startsWith("GIT_")));
 Object.assign(env, { GIT_CONFIG_GLOBAL: "/dev/null", GIT_CONFIG_NOSYSTEM: "1" });
 
-// The hooks and these tests need git 2.32 or later; skip (visibly) on an older
+// The hooks and these tests need git 2.36 or later; skip (visibly) on an older
 // git, or none, such as a host build image, rather than fail the deploy.
 let version = "";
 try {
   version = execFileSync("git", ["--version"]).toString();
 } catch {}
 const [major, minor] = (version.match(/(\d+)\.(\d+)/) ?? [0, 0, 0]).slice(1).map(Number);
-const test = major > 2 || (major === 2 && minor >= 32) ? nodeTest : (name) => nodeTest.skip(`${name} (needs git 2.32 or later; found ${version.trim() || "no git"})`);
+const test = major > 2 || (major === 2 && minor >= 36) ? nodeTest : (name) => nodeTest.skip(`${name} (needs git 2.36 or later; found ${version.trim() || "no git"})`);
 
 function withRepo(fn) {
   const dir = mkdtempSync(join(tmpdir(), "hooks-"));
@@ -188,6 +188,25 @@ test("a clean merge of already-pushed check changes does not count", () =>
     git("checkout", "-q", "feature");
     git("merge", "-q", "--no-edit", "--no-ff", "main");
     assert.equal(guard(dir, push(git("rev-parse", "HEAD"), feat, "feature")).status, 0);
+  }));
+
+test("a merge that resolves a check-file conflict to the old version counts", () =>
+  withRepo(({ dir, commit, git }) => {
+    commit("Base", { "check.mjs": "v1" });
+    git("checkout", "-q", "-b", "feature");
+    const feat = commit("Feature check\n\nChecks changed: feature rule.", { "check.mjs": "feature" });
+    git("checkout", "-q", "main");
+    const tight = commit("Tighten\n\nChecks changed: stricter rule.", { "check.mjs": "v2" });
+    git("update-ref", "refs/remotes/origin/main", tight);
+    git("update-ref", "refs/remotes/origin/feature", feat);
+    git("checkout", "-q", "feature");
+    spawnSync("git", ["-c", "user.name=t", "-c", "user.email=t@example.com", "merge", "-q", "main"], { cwd: dir, env });
+    git("checkout", "--ours", "check.mjs");
+    git("add", "check.mjs");
+    git("commit", "-q", "--no-edit");
+    const res = guard(dir, push(git("rev-parse", "HEAD"), feat, "feature"));
+    assert.equal(res.status, 1);
+    assert.match(res.err, /check\.mjs/);
   }));
 
 test("a guarded-paths file next to the script adds repo-specific paths", () =>

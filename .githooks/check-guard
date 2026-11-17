@@ -24,10 +24,11 @@ printf 'x\n' | grep -E "$pattern" >/dev/null
 [ $? -le 1 ] || fail "a line in .githooks/guarded-paths is not a valid regex"
 g() { git -c core.quotePath=false -c log.showRoot=true "$@"; }
 # Prints the guarded paths a commit changes; exits 1 if git or grep fails.
-# (-z keeps odd names unquoted; NULs can't sit in a shell variable, so tr
+# (remerge shows what a merge's own resolution changed, even when it kept
+# one side; -z keeps odd names unquoted; NULs can't sit in a shell variable, so tr
 # runs in the pipe and a git failure leaves a marker line instead.)
 guarded() {
-  out=$({ g log -1 --format= --name-only -z --no-renames --diff-merges=dense-combined "$1" || printf '\0:git-failed:\0'; } | tr '\0' '\n')
+  out=$({ g log -1 --format= --name-only -z --no-renames --diff-merges=remerge "$1" || printf '\0:git-failed:\0'; } | tr '\0' '\n')
   case $out in *:git-failed:*) return 1 ;; esac
   printf '%s\n' "$out" | grep -E "$pattern"
   [ $? -le 1 ]
