@@ -4,6 +4,7 @@
 
 - `.githooks/pre-push` runs sync `--check`, `scripts/check.mjs`, and the tests; `npm run build` (what Workers Builds runs) now runs the tests too. `check.mjs` gained the canonical-link and extra id-reference rules from the `static-site-stack` skill. Contrast stays out (light-dark() tokens).
 - Waiting on Sam: `git config core.hooksPath .githooks`; confirm the Workers Builds build command is `npm run build`; push the throwaway `gate-proof` branch with `--no-verify`, see its preview build fail, then delete it.
+- 2026-11-17: the build failure Sam saw on 2026-11-16 (`404.html` loading `https://example.com/gate-proof.js`, flagged as non-module and off `allowedHosts`) is that planted proof, so the gate works. No commit on `main` or any other local or GitHub branch has the tag, `gate-proof` is no longer on GitHub, and `npm run build` passes on `main` (5999e7dc). Which branch Cloudflare built is unchecked; if the dashboard shows it was `main`, look again.
 
 Last updated 2026-11-03. Read this, then `CLAUDE.md`, before working on the site.
 
