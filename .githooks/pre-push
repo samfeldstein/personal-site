@@ -5,8 +5,14 @@
 #
 # It checks the working tree, not the pushed commits, so commit first. Skip
 # it only in an emergency: git push --no-verify
+#
+# It also refuses a push that changes check files (check.mjs, sync.mjs, test/,
+# .githooks/, and the paths in .githooks/guarded-paths) unless a commit that
+# changes one has a "Checks changed: <why>" line (.githooks/check-guard).
 set -e
 cd "$(git rev-parse --show-toplevel)"
+push=$(cat)
+printf '%s\n' "$push" | sh .githooks/check-guard || exit 1
 node scripts/sync.mjs --check
 node scripts/check.mjs
 node --test test/*.test.mjs
