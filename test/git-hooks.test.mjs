@@ -83,7 +83,7 @@ test("the reason must be in a commit that changes a check file", () =>
 
 test("the built-in list covers the core check files", () =>
   withRepo(({ dir, commit }) => {
-    for (const path of ["check.mjs", "scripts/check.mjs", "sync.mjs", "test/x.test.mjs", ".githooks/pre-push", ".githooks/guarded-paths"]) {
+    for (const path of ["check.mjs", "scripts/check.mjs", "sync.mjs", "scripts/sync.mjs", "test/x.test.mjs", ".githooks/pre-push", ".githooks/guarded-paths"]) {
       const base = commit("Base");
       assert.equal(guard(dir, push(commit(`Touch ${path}`, { [path]: String(Math.random()) }), base)).status, 1, path);
     }
@@ -101,7 +101,7 @@ test("moving a test out of test/ counts", () =>
 test("other files, blank input, and branch deletes pass", () =>
   withRepo(({ dir, commit }) => {
     const base = commit("Base");
-    const page = commit("Copy edit", { "site/index.html": "x", "docs/test/notes.md": "n", "mycheck.mjs": "m" });
+    const page = commit("Copy edit", { "site/index.html": "x", "docs/test/notes.md": "n", "mycheck.mjs": "m", "docs/skills/x/scripts/check.mjs": "c" });
     assert.equal(guard(dir, push(page, base)).status, 0);
     assert.equal(guard(dir, [`(delete) ${zero} refs/heads/old ${base}`]).status, 0);
     assert.equal(guard(dir, [""]).status, 0);
@@ -144,6 +144,21 @@ test("a rebased feature branch is not refused for check changes already on main"
     git("checkout", "-q", "feature");
     git("rebase", "-q", "main");
     assert.equal(guard(dir, push(git("rev-parse", "HEAD"), f1, "feature")).status, 0);
+  }));
+
+test("a rebase that skips a check change already on main is not refused", () =>
+  withRepo(({ dir, commit, git }) => {
+    git("checkout", "-q", "-b", "feature");
+    commit("Feature test\n\nChecks changed: new rule.", { "test/a.test.mjs": "1" });
+    const f2 = commit("Feature page", { "site/a.html": "a" });
+    git("checkout", "-q", "main");
+    commit("Main page", { "site/m.html": "m" });
+    git("cherry-pick", "feature~1");
+    git("update-ref", "refs/remotes/origin/main", "HEAD");
+    git("update-ref", "refs/remotes/origin/feature", f2);
+    git("checkout", "-q", "feature");
+    git("rebase", "-q", "main");
+    assert.equal(guard(dir, push(git("rev-parse", "HEAD"), f2, "feature")).status, 0);
   }));
 
 test("odd file names under test/ still count", () =>
@@ -235,6 +250,19 @@ test("commit-msg skips merges and fixups", () => {
   });
   assert.match(commitMsg("Merge two pages\n").err, /Verified:/);
 });
+
+test("commit-msg warns when staged check files have no Checks changed line", () =>
+  withRepo(({ dir, git }) => {
+    const script = join(dir, ".githooks", "commit-msg");
+    mkdirSync(join(dir, ".githooks"));
+    copyFileSync(join(hooks, "commit-msg"), script);
+    writeFileSync(join(dir, ".githooks", "guarded-paths"), "^shared/facts\\.json$\n");
+    mkdirSync(join(dir, "shared"));
+    writeFileSync(join(dir, "shared", "facts.json"), "{}");
+    git("add", "shared/facts.json");
+    assert.match(commitMsg("Title\n\nVerified: check\n", { script, cwd: dir }).err, /Checks changed/);
+    assert.equal(commitMsg("Title\n\nChecks changed: new title rule.\n\nVerified: check\n", { script, cwd: dir }).err, "");
+  }));
 
 test("commit-msg blocks when MODE=block", () => {
   const dir = mkdtempSync(join(tmpdir(), "mode-"));

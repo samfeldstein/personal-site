@@ -4,8 +4,8 @@
 # The hook runs the checks from the branch being pushed, so a branch could
 # loosen the checks that judge it. This refuses a push that changes a check
 # file unless a commit that changes one has a line starting "Checks changed:"
-# that says why. Check files: any check.mjs or sync.mjs, anything under test/
-# or .githooks/, and the extra paths in guarded-paths next to this script
+# that says why. Check files: check.mjs and sync.mjs at the root or in
+# scripts/, anything under test/ or .githooks/, and the extra paths in guarded-paths next to this script
 # (one extended regex per line, matched against repo-relative paths).
 # Known limits: git push --no-verify skips it; a branch that edits this
 # script is judged by its edited copy; commits already on any
@@ -13,7 +13,7 @@
 # this clone has never fetched isn't compared; and the first push from a
 # clone with no remote-tracking branches at all isn't checked.
 zero=0000000000000000000000000000000000000000
-pattern='(^|/)check\.mjs$|(^|/)sync\.mjs$|^test/|^\.githooks/'
+pattern='^(scripts/)?(check|sync)\.mjs$|^test/|^\.githooks/'
 list="$(dirname "$0")/guarded-paths"
 if [ -f "$list" ]; then
   extra=$(sed 's/[[:space:]]*$//' "$list" | grep -v -e '^#' -e '^[[:space:]]*$' | paste -s -d '|' -)
@@ -58,13 +58,19 @@ $hits"
     has_reason "$c" && reason=yes
   done
   # A force push can drop commits that changed check files without any new
-  # commit touching them. Then any pushed commit's line counts, so an empty
-  # commit can carry it.
+  # commit touching them. A dropped change counts only if the file now differs
+  # from the remote (a rebase that skips a commit already on main doesn't).
+  # Then any pushed commit's line counts, so an empty commit can carry it.
   if [ "$known" = yes ] && ! git merge-base --is-ancestor "$remote_sha" "$local_sha"; then
     dropped=$(g rev-list "$remote_sha" --not "$local_sha") || fail "git rev-list failed for $remote_sha"
+    differ=$({ g diff --name-only -z --no-renames "$remote_sha" "$local_sha" || printf '\0:git-failed:\0'; } | tr '\0' '\n')
+    case $differ in *:git-failed:*) fail "git diff failed for $local_ref" ;; esac
     lost=""
     for c in $dropped; do
       hits=$(guarded "$c") || fail "could not read the files of $c"
+      hits=$(printf '%s\n' "$hits" | while IFS= read -r f; do
+        [ -n "$f" ] && printf '%s\n' "$differ" | grep -qxF -- "$f" && printf '%s\n' "$f"
+      done)
       [ -n "$hits" ] && lost="$lost
 $hits"
     done
