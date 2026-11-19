@@ -8,7 +8,7 @@ Sam Feldstein’s personal site (samfeldstein.xyz): plain HTML, CSS and JavaScri
 
 ## Commands
 
-All scripts are dependency-free Node except `scripts/photos.mjs` (`sharp`, `exiftool-vendored`; `npm install` first) and `scripts/screenshots.mjs` (`sharp` and Chrome; run it in the owner's terminal, since the sandbox has no network). `screenshots.mjs` writes 1280×720 WebPs and 640×360 `-640` copies to `site/img/projects/` for the professional projects; the Code page shows them above the entry, with `images` (file and alt text) in `scripts/projects.json`. Personal projects stay a plain list. A site that blocks bots (ReGreen Big Bend) gets no image.
+All scripts are dependency-free Node except `scripts/photos.mjs` (`sharp`, `exiftool-vendored`; `npm install` first) and `scripts/screenshots.mjs` (`sharp` and Chrome; run it in the owner's terminal, since the sandbox has no network). `screenshots.mjs` captures each professional project's home page at 1920×1080 and writes 1280×720 WebPs and 640×360 `-640` copies to `site/img/projects/`; the Code page shows them above the entry, with `images` (file and alt text) in `scripts/projects.json`. Personal projects stay a plain list. A site that blocks headless browsers (ReGreen Big Bend) isn't in the script; its screenshot is taken by hand (Chrome DevTools at 1920×1080, "Capture screenshot") and resized to the same two files.
 
 - `node scripts/sync.mjs`: writes the shared parts into every page, inlines CSS, stamps script links, regenerates the sitemaps (`--check` writes nothing and exits 1 if anything is out of date)
 - `node scripts/check.mjs`: fails if the site has drifted or something is broken
@@ -38,6 +38,8 @@ All scripts are dependency-free Node except `scripts/photos.mjs` (`sharp`, `exif
 - **Keep the book theme consistent.** New pages are chapters built from `book.css`; put shared pieces there rather than copying them between page files.
 - **Code page skills** are one plain-text line of names separated by commas, with no "and" before the last one, even when skills are added.
 - **Project names** are approved by the owner in `scripts/projects.json`; a new repository appears only after its name is approved there.
+- **Project descriptions** never repeat the project's name (the title already shows it): "Website for a … in <place>.", then a short line on how it's built ("Built with Astro and Decap CMS", "A custom WordPress theme"). A rebuilt site is dated from the rebuild. A repository's description lives on GitHub, so change it there too (`gh repo edit`), or the monthly run puts the old one back (owner, 2026-11-19).
+- **Screenshots** capture the first screen at 1920x1080 (scaled to the 16:9 files), so a full-screen hero fits whole. They keep their file names, so browsers may show the old ones for up to a week (`_headers`); the owner chose not to rename them (2026-11-19).
 - **No third-party hosts.** Nothing loads from a host outside `allowedHosts`; plain `<a>` links to other sites are fine.
 - **Comments:** none in JS or HTML beyond the structural markers (`<!-- page: -->`, `<!-- shared:... -->`, `<!-- gallery -->`, `<!-- projects -->`), because nothing strips them. A short why-comment is allowed in `shared/css/` files (a hack, a browser bug, an ordering constraint), since `sync.mjs` strips CSS comments when it inlines. Put other explanations in `docs/`.
 - Git history is still about 480 MB from the old committed Astro image cache; rewriting it is optional and the owner’s call.
