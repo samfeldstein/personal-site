@@ -51,7 +51,7 @@
       "url": "https://littlepeakspediatrictherapy.com/",
       "started": "2026-05",
       "section": "professional",
-      "description": "Website for Little Peaks Pediatric Therapy, an in-home and virtual physical therapy practice for children near Longmont, Colorado. Plain HTML, CSS, and JavaScript on Cloudflare Workers",
+      "description": "Website for an in-home and virtual pediatric physical therapy practice in Firestone, Colorado. Plain HTML, CSS, and JavaScript on Cloudflare Workers",
       "image": "little-peaks-pediatric-therapy.webp",
       "alt": "Home page: the logo, with figures walking and in wheelchairs on blue mountain peaks, and the line Providing whole-child care to children of all ages and abilities"
     },
@@ -60,18 +60,18 @@
       "url": "https://regreenbigbend.com/",
       "started": "2024-06",
       "section": "professional",
-      "description": "Website for ReGreen Big Bend, an organization conserving and restoring native desert habitat in Texas's Big Bend",
+      "description": "Website for an organization conserving and restoring native desert habitat in Texas's Big Bend. A custom WordPress theme",
       "image": "regreen-big-bend.webp",
       "alt": "Home page: outlined title and the line Conserving and restoring native habitat in Texas's Big Bend"
     },
     {
       "name": "Prairie Rose Arena",
       "url": "https://prairierosearena.com/",
-      "started": "2024-07",
+      "started": "2026-10",
       "section": "professional",
       "image": "prairie-rose-arena.webp",
       "alt": "Home page: the name in outlined wood type above a drawing of a wild rose",
-      "description": "Website for Prairie Rose Arena, a year-round equine event center and horse motel in Elkhart, Iowa. Rebuilt in 2026 with Astro and Decap CMS"
+      "description": "Website for a year-round equine event center and horse motel in Elkhart, Iowa. Built with Astro and Decap CMS"
     }
   ],
   "notSkills": []
