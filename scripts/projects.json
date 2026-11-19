@@ -61,8 +61,8 @@
       "started": "2024-07",
       "section": "professional",
       "image": "prairie-rose-arena.webp",
-      "alt": "Home page with boot and saddle drawings",
-      "description": "Website for Prairie Rose Arena, a year-round equine event center and horse motel in Elkhart, Iowa"
+      "alt": "Home page: the name in outlined wood type above a drawing of a wild rose",
+      "description": "Website for Prairie Rose Arena, a year-round equine event center and horse motel in Elkhart, Iowa. Rebuilt in 2026 with Astro and Decap CMS"
     }
   ],
   "notSkills": []
