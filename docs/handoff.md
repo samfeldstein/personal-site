@@ -3,6 +3,8 @@
 ## 2026-11-19 (orchestrator)
 
 - **Prairie Rose entry refreshed** for the v2 site (live since 2026-11-11): new screenshots from `screenshots.mjs`, new alt text, and the description now says "Rebuilt in 2026 with Astro and Decap CMS". The date stays Jul 2024. Tracker `portfolio-prairie-rose` finished. Nothing else is queued here.
+- **Code page, later the same day:** all screenshots now capture 1920x1080 (scaled to the same 16:9 files) so Prairie Rose's full-screen hero fits; ReGreen's is still the hand-taken 1280 one (blocks headless browsers). Little Peaks Pediatric Therapy added (May 2026, first Little Peaks commit; the 2024 commits are an old Astro template). Descriptions no longer repeat the project name; Prairie Rose is dated Oct 2026 (v2 start). Postoley's GitHub description changed to match; all eight GitHub descriptions match the page. Skills line reordered by the owner.
+- **Lighthouse panel:** now the four category scores (97, 100, 100, 100) instead of performance plus timings; no new run (owner's call). `lighthouse.mjs` takes four scores.
 
 ## 2026-11-17 (verification hooks, side session; not pushed)
 
