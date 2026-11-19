@@ -19,6 +19,7 @@ import sharp from "sharp";
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const OUT = join(root, "site/img/projects");
 const SITES = {
+  "little-peaks-pediatric-therapy": "https://littlepeakspediatrictherapy.com/",
   "postoley-dance-ensemble": "https://postoley.org/",
   "presswork-web-co": "https://presswork.dev/",
   "prairie-rose-arena": "https://prairierosearena.com/",
@@ -42,7 +43,7 @@ for (const [name, url] of Object.entries(SITES)) {
   try {
     execFileSync(CHROME, [
       "--headless=new", "--disable-gpu", "--hide-scrollbars", "--force-color-profile=srgb",
-      "--force-prefers-color-scheme=light", "--force-prefers-reduced-motion", "--window-size=1280,720", "--virtual-time-budget=10000",
+      "--force-prefers-color-scheme=light", "--force-prefers-reduced-motion", "--window-size=1920,1080", "--virtual-time-budget=10000",
       `--user-data-dir=${join(tmp, "profile-" + name)}`, `--screenshot=${png}`, url,
     ], { stdio: "ignore", timeout: 60000 });
     const file = join(OUT, `${name}.webp`);
