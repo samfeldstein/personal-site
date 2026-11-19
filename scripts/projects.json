@@ -47,6 +47,15 @@
   ],
   "others": [
     {
+      "name": "Little Peaks Pediatric Therapy",
+      "url": "https://littlepeakspediatrictherapy.com/",
+      "started": "2026-05",
+      "section": "professional",
+      "description": "Website for Little Peaks Pediatric Therapy, an in-home and virtual physical therapy practice for children near Longmont, Colorado. Plain HTML, CSS, and JavaScript on Cloudflare Workers",
+      "image": "little-peaks-pediatric-therapy.webp",
+      "alt": "Home page: the logo, with figures walking and in wheelchairs on blue mountain peaks, and the line Providing whole-child care to children of all ages and abilities"
+    },
+    {
       "name": "ReGreen Big Bend",
       "url": "https://regreenbigbend.com/",
       "started": "2024-06",
