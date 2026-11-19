@@ -1,5 +1,9 @@
 # Handoff
 
+## Next (2026-11-19, orchestrator)
+
+- **Prairie Rose entry on the code page:** tracker `portfolio-prairie-rose` (top priority, Sam's pick for the next session). Job applications link the code portfolio.
+
 ## 2026-11-17 (verification hooks, side session; not pushed)
 
 - It first refuses a push that changes check files (`check.mjs` or `sync.mjs`, `test/`, `.githooks/`, and the paths in `.githooks/guarded-paths`) unless a commit that changes one has a `Checks changed: <why>` line in its body (`.githooks/check-guard`). `.githooks/commit-msg` warns when a commit has no `Verified: <what ran>` line (observe mode; `MODE=block` at its top would enforce it). Rows from past incidents, run by what a diff touches: the `site-testing` skill's `references/incident-checks.md`. Also guarded here: `scripts/projects.mjs`, `package.json`, `.github/workflows/`, and `shared/facts.json`.
