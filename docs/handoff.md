@@ -1,8 +1,8 @@
 # Handoff
 
-## Next (2026-11-19, orchestrator)
+## 2026-11-19 (orchestrator)
 
-- **Prairie Rose entry on the code page:** tracker `portfolio-prairie-rose` (top priority, Sam's pick for the next session). Job applications link the code portfolio.
+- **Prairie Rose entry refreshed** for the v2 site (live since 2026-11-11): new screenshots from `screenshots.mjs`, new alt text, and the description now says "Rebuilt in 2026 with Astro and Decap CMS". The date stays Jul 2024. Tracker `portfolio-prairie-rose` finished. Nothing else is queued here.
 
 ## 2026-11-17 (verification hooks, side session; not pushed)
 
