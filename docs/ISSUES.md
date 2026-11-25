@@ -29,13 +29,14 @@ Known problems and small cleanups found during a site review on 2026-10-13, upda
 - [x] **Typo in the site description.** "Sam Feldstein is human being based in Denver, CO." is missing "a". It’s in `site.description` in [shared/facts.json](../shared/facts.json) and in the home page comment in [site/index.html](../site/index.html). Fix both, then run `node scripts/sync.mjs`.
 - [x] **Typo on Published Writing.** The description in the page comment of [site/published-writing/index.html](../site/published-writing/index.html) reads "My publish writing". Fix it, then run `node scripts/sync.mjs`.
 - [x] **Home footer wording.** ("Powered by Astro" replaced with a colophon on home and Code, in [shared/credit.html](../shared/credit.html).)
-- [ ] **Photo locations.** No photo has a location yet. Add City, State and Country (IPTC fields) to each photo in `photos/`, then run `node scripts/photos.mjs`; it lists the ones still missing and shows locations on the gallery as they're added.
+- [ ] **Photo locations.** 30 of 88 photos have one (2026-11-25); 57 still need one, not counting arches-national-monument (being removed). The site shows Sublocation, City, State (Country only when there's no State). Add City, State and Country (IPTC fields) to each photo in `photos/`, then run `node scripts/photos.mjs`; it lists the ones still missing and shows locations on the gallery as they're added.
 - [ ] **Gallery image URLs changed.** Photos moved from `/_astro/*` to `/img/photos/*`. Image search will reindex them; old image links won’t resolve.
 - [x] **Review the Code page portfolio.** (The list is now generated from public GitHub repositories by `scripts/projects.mjs`, with names approved in `scripts/projects.json`.)
 
 ## From the October 2026 audits (owner)
 
 - [ ] **GitHub repo description.** personal-site says "built with Astro"; update it on GitHub (the lowercase "rss" in rss-feeds stays). (Renamed to personal-site, shown as "Personal Site".)
+- [ ] **Automated photo metadata check** (Sam, 2026-11-25): the repo's tests fail when a photo has no Title, Description (alt text), or location. Not built; it needs a design that works in the Cloudflare build (photos.mjs's ExifTool is a dependency the tests don't have; checking the generated gallery HTML may be enough).
 - [ ] **Photo alt-text typos** (EXIF Description, then `node scripts/photos.mjs`): "it's head", "A group a people", "ocototillo with a mountains", "Robert's Western world", "Arches National Monument" (a National Park); two Barksdale's photos share the same alt text.
 - [ ] **Presswork's structured data** names its founder as a bare Person; link it to `https://samfeldstein.xyz/#person` in the presswork repo.
 - [x] **Favicons.** (Gilt "SF" in Cormorant Garamond on the cover cloth, 2026-10-17.)
