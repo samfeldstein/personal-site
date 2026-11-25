@@ -39,7 +39,7 @@ Known problems and small cleanups found during a site review on 2026-10-13, upda
 - [x] **Private captions** (Sam, 2026-11-25): captions stay private in Lightroom; the site's alt text comes from Lightroom's Alt Text field. Lightroom exports to `~/Pictures/lightroom-photos/website-export`, outside the repo, so exports (with captions and GPS) never reach GitHub; `photos/` is no longer tracked.
 - [x] **Automated photo metadata check** (Sam, 2026-11-25): `scripts/photos.mjs` stops before changing anything when a photo has no title, Alt Text, or location, and `scripts/check.mjs` fails the build when a gallery photo on the page lacks one. No build-time check can tell a caption from Alt Text in `alt=`; that rests on photos.mjs reading only Alt Text.
 - [x] **Photo alt-text typos.** Fixed in Lightroom's Alt Text (2026-11-25); arches-national-monument was removed and the two Barksdale's photos have their own text.
-- [ ] **Presswork's structured data** names its founder as a bare Person; link it to `https://samfeldstein.xyz/#person` in the presswork repo.
+- [ ] **Presswork's structured data** names its founder as a bare Person; link it to `https://samfeldstein.xyz/#person`. Now Presswork's roadmap item (i) (`docs/handoff.md` in the presswork repo, added 2026-11-25).
 - [x] **Favicons.** (Gilt "SF" in Cormorant Garamond on the cover cloth, 2026-10-17.)
 - [ ] **Cloudflare dashboard:** keep Web Analytics on (cookieless; Presswork kept it too) and Bot Fight Mode off (its injected script dropped Presswork's Lighthouse Best Practices to 81). The colophon now says only "No cookies."
 
