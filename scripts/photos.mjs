@@ -22,7 +22,7 @@
   A changed photo that keeps its file name keeps its old WebPs; delete
   site/img/photos/<name>-*.webp first to regenerate them.
 */
-import { readdirSync, readFileSync, writeFileSync, existsSync, unlinkSync, mkdirSync } from "node:fs";
+import { readdirSync, readFileSync, writeFileSync, existsSync, unlinkSync, mkdirSync, statSync } from "node:fs";
 import { join, parse, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
@@ -44,7 +44,7 @@ const sizes = (ratio) => {
 
 const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
-if (!existsSync(SOURCE)) {
+if (!existsSync(SOURCE) || !statSync(SOURCE).isDirectory()) {
   console.error(`photos: no export folder at ${SOURCE}; export the Website collection from Lightroom there, or set PHOTOS_DIR. Nothing changed.`);
   process.exit(1);
 }
