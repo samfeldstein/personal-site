@@ -8,7 +8,7 @@
     node scripts/photos.mjs
 
   For each photo it reads the title, description (the alt text), creation
-  date and location (City, State, Country; shown when present) with ExifTool, writes WebP copies at the widths below into
+  date and location (Sublocation, City, State, Country; shown when present) with ExifTool, writes WebP copies at the widths below into
   site/img/photos/ (only the ones that don't exist yet), deletes copies of
   photos that are gone, and rewrites the gallery between the
   <!-- gallery --> markers in site/photos/index.html, newest first.
@@ -42,7 +42,8 @@ const place = (tags) => {
   const city = tags.City;
   const state = tags.State || tags["Province-State"];
   const country = tags.Country || tags["Country-PrimaryLocationName"];
-  return [city, state || (city ? country : ""), state || city ? "" : country].filter(Boolean).join(", ").replace(/'/g, "\u2019");
+  const venue = tags.Location || tags["Sub-location"]; // Lightroom's Sublocation
+  return [venue, city, state || (city ? country : ""), state || city ? "" : country].filter(Boolean).join(", ").replace(/'/g, "\u2019");
 };
 
 const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -121,4 +122,4 @@ if (!re.test(html)) throw new Error("site/photos/index.html: missing the <!-- ga
 writeFileSync(PAGE, html.replace(re, (_, open, close) => `${open}\n${photos.map(img).join("\n")}${close}`));
 console.log(`photos: ${photos.length} photos in the gallery`);
 const unplaced = photos.filter((p) => !p.place);
-if (unplaced.length) console.log(`photos: no location (City, State, Country) on ${unplaced.length}: ${unplaced.map((p) => p.name).join(", ")}`);
+if (unplaced.length) console.log(`photos: no location (Sublocation, City, State, Country) on ${unplaced.length}: ${unplaced.map((p) => p.name).join(", ")}`);
