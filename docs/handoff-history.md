@@ -1,0 +1,71 @@
+# Handoff history
+
+Session logs moved out of `docs/handoff.md` (newest first). Read `docs/handoff.md` for where things stand.
+
+## 2026-11-19 (orchestrator)
+
+- **Prairie Rose entry refreshed** for the v2 site (live since 2026-11-11): new screenshots from `screenshots.mjs`, new alt text, and the description now says "Rebuilt in 2026 with Astro and Decap CMS". The date stays Jul 2024. Tracker `portfolio-prairie-rose` finished. Nothing else is queued here.
+- **Code page, later the same day:** all screenshots now capture 1920x1080 (scaled to the same 16:9 files) so Prairie Rose's full-screen hero fits; ReGreen's is still the hand-taken 1280 one (blocks headless browsers). Little Peaks Pediatric Therapy added (May 2026, first Little Peaks commit; the 2024 commits are an old Astro template). Descriptions no longer repeat the project name; Prairie Rose is dated Oct 2026 (v2 start). Postoley's GitHub description changed to match; all eight GitHub descriptions match the page. Skills line reordered by the owner.
+- **Lighthouse panel:** now the four category scores (97, 100, 100, 100) instead of performance plus timings; no new run (owner's call). `lighthouse.mjs` takes four scores.
+- **Checks:** sync, `check.mjs`, and 78 tests; `~/claude/dev/a11y/audit.mjs` on the local Code page was clean (axe, keyboard; Lighthouse 100 in all four on mobile and desktop; Firefox didn't launch, as before); 375px had no sideways scroll. The iOS Simulator was skipped (an entry in existing styles). Pushed and confirmed live (`version.txt` ac13e1d).
+- **Sandbox:** the screenshot script, Playwright, `gh`, `git push`, and live `curl` checks ran in the Terminal panel (no network or GitHub login in the sandbox).
+
+## 2026-11-17 (verification hooks, side session; not pushed)
+
+- It first refuses a push that changes check files (`check.mjs` or `sync.mjs`, `test/`, `.githooks/`, and the paths in `.githooks/guarded-paths`) unless a commit that changes one has a `Checks changed: <why>` line in its body (`.githooks/check-guard`). `.githooks/commit-msg` warns when a commit has no `Verified: <what ran>` line (observe mode; `MODE=block` at its top would enforce it). Rows from past incidents, run by what a diff touches: the `site-testing` skill's `references/incident-checks.md`. Also guarded here: `scripts/projects.mjs`, `package.json`, `.github/workflows/`, and `shared/facts.json`.
+
+## 2026-11-16 (deploy gate, side session; not pushed)
+
+- `.githooks/pre-push` runs sync `--check`, `scripts/check.mjs`, and the tests; `npm run build` (what Workers Builds runs) now runs the tests too. `check.mjs` gained the canonical-link and extra id-reference rules from the `static-site-stack` skill. Contrast stays out (light-dark() tokens).
+- Waiting on Sam: `git config core.hooksPath .githooks`; confirm the Workers Builds build command is `npm run build`; push the throwaway `gate-proof` branch with `--no-verify`, see its preview build fail, then delete it.
+- 2026-11-17: the build failure Sam saw on 2026-11-16 (`404.html` loading `https://example.com/gate-proof.js`, flagged as non-module and off `allowedHosts`) is that planted proof, so the gate works. No commit on `main` or any other local or GitHub branch has the tag, `gate-proof` is no longer on GitHub, and `npm run build` passes on `main` (5999e7dc). Which branch Cloudflare built is unchecked; if the dashboard shows it was `main`, look again.
+
+Last updated 2026-11-03. Read this, then `CLAUDE.md`, before working on the site.
+
+## 2026-11-03
+
+- **Code page.** Two sections, "Professional Projects" first, then "Personal Projects". Each project's section is in `scripts/projects.json` (`sections` map for repos, `section` on `others`); a project with none goes under Personal with a warning. Professional is a two-column grid on wide screens (`.projects-grid` in `shared/css/code.css`, 80rem wide, 5rem gap, single column under 56em); personal stays a plain list.
+- **Images.** Only professional projects have one: 1280x720 WebP plus a 640x360 `-640.webp` in `site/img/projects/`, set in `projects.json` (`images` map for repos, `image` and `alt` on `others`), shown above the title with rounded corners and a soft shadow (`.work-image` in `book.css`). `check.mjs` requires alt, width, height, `loading="lazy"`, `srcset`, `sizes`, an existing file, no orphans, and under 80 KB. ReGreen Big Bend's was taken by hand (its site blocks bot screenshots), so make its `-640` by hand too. The current `-640` files were resized from the 1280 WebPs at quality 70; `screenshots.mjs` makes new ones from the source at quality 60.
+- **Screenshots.** `scripts/screenshots.mjs` (`sharp` and Chrome; run it in the owner's terminal, the sandbox has no network) remakes them; it asks for reduced motion so Presswork's typing animation doesn't show. `projects.mjs` also needs the owner's terminal to write the page.
+- **Audit (Code page).** After the fixes, on the local server: Lighthouse 99–100 mobile and 100 desktop, with accessibility, best practices, and SEO at 100; page weight 268 → 185 KiB on Lighthouse's test device (2x phones and laptops still load the 1280 images); axe found no violations; no sideways scroll or broken images in Chromium or WebKit. Print checked in Chrome: six pages, with page 1 about half empty because the first image doesn't fit under the header. New meta description is in. Not rerun since the last print fix and the description change.
+- **Test scripts.** They live outside the repo in `~/claude/dev/a11y`: `node audit.mjs <url> <outdir>` and `node voiceover.mjs <url> <outdir>`. The owner runs them, because the sandbox can't read or run that folder. Run VoiceOver from Terminal.app; it wouldn't start from the desktop app's terminal panel.
+- **Open from the audit.**
+  - VoiceOver: the first run stuck in Safari's toolbar. The script now jumps to a heading first, but that fix is untested, so spoken output is unverified. That includes ", external" and whether Safari keeps `role="list"`.
+  - Firefox wouldn't launch under Playwright ("Could not find profile folder"), so it's untested.
+  - The first deploy of these fixes wasn't confirmed: check that `samfeldstein.xyz/version.txt` shows `main`.
+  - Left alone: real iPhone check, `noindex` not guarded in `check.mjs`, image width and height not compared to the files, the malformed `prefix="og:https://ogp.me/ns#"`, and the "Hire me" envelope missing from print.
+- **`check.mjs` additions.** Tag balance, nested links, repeated attributes, non-structural comments, project names, image and alt pairs, and dates against `projects.json`, "and" in the skills line, and outside hosts in `srcset`, `poster`, and `style`.
+- **Comments.** Short why-comments are now allowed in `shared/css/` (sync strips them); CLAUDE.md says so.
+- **Not done (from the cold review).** The first image is lazy-loaded, so it may load late on desktop (`check.mjs` requires lazy); a missing or mistyped `section` only warns; an empty project list wouldn't fail the build.
+- **Tests:** all 57 pass. Everything through the meta description is pushed; only this handoff update isn't.
+
+## 2026-11-01
+
+- **Code page.** Added Planner (`planner`, approved name, Nov 2026). Its homepage is a GitHub Pages app, so it's in `linkToRepo`: `check.mjs` fails on any `github.io` project link. The owner kept that rule for now; narrowing it to allow `github.io` for repos in `sites` was offered. The run also moved Digital Notebook (Oct 2024) above Prairie Rose Arena (Jul 2024), into date order. Pushed and deployed.
+- **Dev server.** `.claude/launch.json` runs `npx wrangler dev` on port 8787 for the desktop app's browser pane. Pushed.
+- **Sandbox note.** WebFetch wasn't loaded this time either; the owner ran `node scripts/projects.mjs` and `gh` in their own terminal.
+- **Tests:** all 42 pass.
+
+## 2026-10-28
+
+- **Code page.** Added ReGreen Big Bend (Jun 2024) and Prairie Rose Arena (Jul 2024), neither a GitHub repo, via a new `others` list in `scripts/projects.json` that `projects.mjs` merges in by date. Added Notebook Site (`notebook-site`, approved name, in `sites`). Digital Notebook stays, with its GitHub description now saying it's superseded. WordPress added to skills.
+- **Descriptions** come from GitHub, but only when `projects.mjs` runs (monthly pull request or by hand); copy changes in by hand between runs.
+- **CI** (`.github/workflows/ci.yml`): sync, check and tests on every push; on `main`, `npm run build` ends with `scripts/version.mjs` writing the commit to `site/version.txt` (gitignored), and the `deployed` job fails if the live `version.txt` doesn't match within 15 minutes, so a failed Cloudflare build or deploy emails the owner. Confirmed working on 2026-10-28. A daily job checks the four live pages return 200.
+- **Sandbox note.** Local sessions can't reach GitHub from Bash or read wrangler's login; use WebFetch for the GitHub API and hand-edit the project list to match what `projects.mjs` would write.
+- **Tests:** all 42 pass.
+
+## 2026-10-21
+
+- **Layout.** Scripts and `projects.json` moved into `scripts/`; `ISSUES.md` and `ROADMAP.md` into `docs/`. Empty `src/` and `public/` folders (Astro leftovers) removed.
+- **Code page.** Entries link to the GitHub repository, not the live site, for repositories listed under `linkToRepo` in `scripts/projects.json` (RSS Feeds). A homepage listed under neither `sites` nor `linkToRepo` gets a warning. `check.mjs` fails if a project link points at `github.io`.
+- **Project list is no longer built by Cloudflare.** `npm run build` runs only `sync.mjs --check` and `check.mjs`. `projects.mjs` changes the page only when run locally, or via the monthly pull request from `.github/workflows/projects-update.yml`. With no terminal it no longer adds skills unless given `--yes`.
+- **Cold review fixes.** Quote typos; `check.mjs` now checks CSS `url()`/`@import` hosts, JSON data scripts, and characters in `site/js`; `projects.mjs` reads its font ranges from `book.css`; Lighthouse script has a timeout; same-site links get no ↗.
+- **Still open:** a Content-Security-Policy and other security headers; the résumé-only fonts (about 210 KB) still deployed; `.claude/hooks/pull.mjs` crashes if `origin/main` is missing or HEAD is detached (the sandbox blocked editing it); tests for `_redirects` targets, quote data and `photos.mjs` `sizes()`.
+
+## Later on 2026-10-17
+
+- **Done and live:** Code is chapter 1 and Published Writing chapter 3 in the contents; "Sam Feldstein" everywhere (cover, copyright, structured data); copyright from 2023; the lightbox close button shows no focus box on pointer open and its × is centered in the keyboard focus ring; the gallery shows photo locations when the EXIF has them; `projects.json` `started` dates (Digital Notebook: Oct 2024; Presswork's Oct 2026 is correct); `projects.mjs` adds missing main languages to the skills line (Python, Vue and MDX added); README and report reworded from the owner's perspective.
+- **Repo topics** updated on GitHub for personal-site and the Code page projects.
+- **Backups.** A machine-wide launchd job on the owner's Mac pulls and clones every GitHub repo they own at login and daily. Installed and first run clean on 2026-10-17. Its source and the notebook write-up are kept in `docs/backup-repos/` (not used by the site). The first run flagged unpushed commits in trading-model, prairie-rose-arena-v2, presswork and notes for the owner to check.
+- **Waiting:** photo locations (in `ISSUES.md`).
+
