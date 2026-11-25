@@ -14,7 +14,7 @@ The 13 résumé pages are disabled (moved to `_archive/resumes/` on 2026-10-17).
 - If it should be on the site again, render it as a page from that file.
 - A symlink only resolves where both projects sit side by side. Cloudflare builds from this repo alone, so a deployed page needs the file committed here (copied in by a script, or the symlink replaced at deploy time).
 - The archived pages still use `shared/css/resume.css` and `resume-print.css`; reuse or delete them then.
-- Also decide what happens to the old PDFs in `site/static/resumes/` (see ISSUES.md: old email address, unreferenced files).
+- The old PDFs in `site/static/resumes/` were deleted on 2026-11-25.
 
 ## Shrink the repo
 
@@ -32,4 +32,3 @@ The site is canonical at samfeldstein.xyz; samfeldstein.com should take over, wi
 - On Cloudflare: add samfeldstein.com (and `www`) as a custom domain on the Worker, and a 301 redirect from every samfeldstein.xyz URL to the same path on .com (a Redirect Rule; `_redirects` can't match on host). Keep the .xyz registration so old links keep working.
 - Afterwards: add the .com property in Search Console and submit the sitemap, update the Presswork structured-data link (see handoff), and update the GitHub repo homepage.
 - The subdomains (`notes`, `cookbook`, `shelftalkers`) move to .com too, each with its own .xyz redirect. They're separate projects, so each repo needs its own domain change; here, update the RSS link in `shared/head.html`, the contents links, the `_redirects` targets and `notes.` in `allowedHosts`. Project links on the Code page come from each repo's GitHub homepage, so update those on GitHub.
-- The old résumé PDFs in `site/static/resumes/` name .xyz; leave them unless they're regenerated.

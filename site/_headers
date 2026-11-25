@@ -17,10 +17,6 @@
 /static/images/*
   Cache-Control: public, max-age=86400
 
-/static/resumes/*
-  Cache-Control: public, max-age=28000
-  X-Robots-Tag: noindex
-
 /favicon.svg
   Cache-Control: public, max-age=86400
 
