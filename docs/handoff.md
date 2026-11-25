@@ -4,7 +4,7 @@
 
 **Done 2026-11-25: private captions, Alt Text for the site.** Every photo's Alt Text and location are set in Lightroom (Claude wrote them into the originals in `~/Pictures/lightroom-photos` after Sam's Cmd+S; Sam read them back). Lightroom now exports to `~/Pictures/lightroom-photos/website-export`, outside the repo; `photos/` is untracked. `scripts/photos.mjs` reads Alt Text (never the caption) and refuses a photo missing title, Alt Text or location; `check.mjs` checks the gallery. 89 photos, all located. Two synced-from-phone photos were moved out of Lightroom's `Mobile Downloads.lrdata` into `lightroom-photos` by Sam. Private details (captions, home locations, GPS) are not written in any tracked file.
 
-**Held changes from the photo walk-through, applied 2026-11-25:** the 10 résumé PDFs and their `_headers` entry deleted (ISSUES ticked); Presswork roadmap item (i) added for its structured data (ISSUES points at it); arches-national-monument removed. Still waiting on Sam: set the GitHub repo description to exactly "My personal site. Plain HTML, CSS, and JavaScript, hosted on Cloudflare." (`gh repo edit`, in his terminal; then tick ISSUES).
+**Held changes from the photo walk-through, applied 2026-11-25:** the 10 résumé PDFs and their `_headers` entry deleted (ISSUES ticked); Presswork roadmap item (i) added for its structured data (ISSUES points at it); arches-national-monument removed. GitHub repo description set by Sam.
 
 **Done 2026-11-24/25:** the gallery's location line now starts with Lightroom's Sublocation ("Fillmore Auditorium, Denver, CO"; 3d4de3a4), confirmed against a real Lightroom export.
 

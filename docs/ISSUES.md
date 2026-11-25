@@ -35,7 +35,7 @@ Known problems and small cleanups found during a site review on 2026-10-13, upda
 
 ## From the October 2026 audits (owner)
 
-- [ ] **GitHub repo description.** personal-site says "built with Astro"; update it on GitHub (the lowercase "rss" in rss-feeds stays). (Renamed to personal-site, shown as "Personal Site".)
+- [x] **GitHub repo description.** (Set 2026-11-25 to "My personal site. Plain HTML, CSS, and JavaScript, hosted on Cloudflare.") personal-site said "built with Astro"; update it on GitHub (the lowercase "rss" in rss-feeds stays). (Renamed to personal-site, shown as "Personal Site".)
 - [x] **Private captions** (Sam, 2026-11-25): captions stay private in Lightroom; the site's alt text comes from Lightroom's Alt Text field. Lightroom exports to `~/Pictures/lightroom-photos/website-export`, outside the repo, so exports (with captions and GPS) never reach GitHub; `photos/` is no longer tracked.
 - [x] **Automated photo metadata check** (Sam, 2026-11-25): `scripts/photos.mjs` stops before changing anything when a photo has no title, Alt Text, or location, and `scripts/check.mjs` fails the build when a gallery photo on the page lacks one. No build-time check can tell a caption from Alt Text in `alt=`; that rests on photos.mjs reading only Alt Text.
 - [x] **Photo alt-text typos.** Fixed in Lightroom's Alt Text (2026-11-25); arches-national-monument was removed and the two Barksdale's photos have their own text.
