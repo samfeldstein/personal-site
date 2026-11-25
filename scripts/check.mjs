@@ -38,6 +38,8 @@
     - the only comments are the structural markers (page, shared, gallery, projects)
     - project names, image and alt pairs, and dates match scripts/projects.json
     - the skills line has no "and"
+    - the photos page has the gallery, and every gallery photo has a title,
+      a location and Alt Text (data-title, data-place, alt)
 
   Usage: node scripts/check.mjs [--root site] [--shared shared]
 */
@@ -278,6 +280,24 @@ export function skillsProblems(html) {
   return /(?:^|[\s,])and\s/i.test(line) ? ['the skills line has "and" in it; separate names with commas only'] : [];
 }
 
+/** Every gallery photo shows a title, a location and Alt Text (all from Lightroom); the photos page must have the gallery. */
+export function galleryProblems(html, { required = false } = {}) {
+  const block = html.match(/<!-- gallery -->([\s\S]*?)<!-- \/gallery -->/)?.[1];
+  if (block === undefined) return required ? ["missing the <!-- gallery --> ... <!-- /gallery --> markers"] : [];
+  const items = [...block.matchAll(/<li\b[^>]*>([\s\S]*?)<\/li>/gi)].map((m) => m[1]);
+  if (!items.length) return ["the gallery has no photos"];
+  const found = [];
+  items.forEach((item, i) => {
+    const link = parseAttrs(item.match(/<a\b([^>]*)>/i)?.[1] ?? "");
+    const img = parseAttrs(item.match(/<img\b([^>]*)>/i)?.[1] ?? "");
+    const name = img.src ?? `item ${i + 1}`;
+    for (const [what, value] of [["title (data-title)", link["data-title"]], ["location (data-place)", link["data-place"]], ["Alt Text (alt)", img.alt]]) {
+      if (!(value ?? "").trim()) found.push(`gallery photo ${name} has no ${what}; set it in Lightroom and run node scripts/photos.mjs`);
+    }
+  });
+  return found;
+}
+
 /** The list between the projects markers must match what the owner approved in projects.json. */
 export function projectListProblems(html, config) {
   const block = html.match(/<!-- projects -->([\s\S]*?)<!-- \/projects -->/)?.[1];
@@ -425,7 +445,7 @@ export function check({ root, shared }) {
     }
     if (h1 !== 1) fail(label, `needs exactly one <h1> (found ${h1})`);
     if (mains !== 1) fail(label, `needs exactly one <main> (found ${mains})`);
-    for (const problem of [...markupProblems(markup), ...commentProblems(html), ...skillsProblems(html), ...projectListProblems(html, projectsConfig)]) fail(label, problem);
+    for (const problem of [...markupProblems(markup), ...commentProblems(html), ...skillsProblems(html), ...projectListProblems(html, projectsConfig), ...galleryProblems(html, { required: page.path === "/photos/" })]) fail(label, problem);
 
     for (const m of markup.replace(/<style[\s\S]*?<\/style>/gi, "").matchAll(/[\w.+-]+@[\w-]+\.[\w.-]+/g)) {
       const address = m[0].replace(/\.+$/, "");

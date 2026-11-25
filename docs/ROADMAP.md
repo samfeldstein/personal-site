@@ -20,10 +20,9 @@ The 13 résumé pages are disabled (moved to `_archive/resumes/` on 2026-10-17).
 
 The site deploys about 81 MB of gallery WebPs (down from about 200 MB under Astro, which also shipped a full-size copy of every photo). Each Cloudflare deploy uploads only new or changed files, and old files simply aren't part of the new version, so there's nothing to purge there.
 
-What is still large is the git repo, which every Cloudflare build clones: about 480 MB of history, mostly the old committed Astro image cache, plus 247 MB of source JPGs in `photos/`. Options, both the owner's call:
+What is still large is the git repo, which every Cloudflare build clones: about 480 MB of history, mostly the old committed Astro image cache (the source JPGs left the repo on 2026-11-25; their old copies stay in history). Option, the owner's call:
 
 - Rewrite history to drop `node_modules/.astro/` (needs a force push; every other clone must be re-cloned).
-- Keep the source JPGs outside the repo and point `scripts/photos.mjs` at that folder.
 
 ## Make samfeldstein.com the primary domain
 

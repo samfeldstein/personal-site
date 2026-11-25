@@ -1,19 +1,23 @@
 #!/usr/bin/env node
 /*
-  photos.mjs: builds the gallery on /photos/ from the JPGs in photos/.
+  photos.mjs: builds the gallery on /photos/ from Lightroom's exports.
 
-  Run it after adding, removing or re-captioning a photo:
+  Lightroom Classic exports the Website collection to a folder outside this
+  repo (PHOTOS_DIR, default ~/Pictures/lightroom-photos/website-export), so
+  the exports and their private captions and GPS never reach GitHub. Run it
+  after Lightroom exports:
 
     npm install          (once; installs sharp and exiftool-vendored)
     node scripts/photos.mjs
 
-  For each photo it reads the title, description (the alt text), creation
-  date and location (Sublocation, City, State, Country; shown when present) with ExifTool, writes WebP copies at the widths below into
-  site/img/photos/ (only the ones that don't exist yet), deletes copies of
-  photos that are gone, and rewrites the gallery between the
+  It reads each photo's Title, Alt Text, capture date and location
+  (Sublocation, City, State, Country) with ExifTool. The caption
+  (Description) is private and never read. If any photo lacks a title, Alt
+  Text or location, it lists them and stops before changing anything.
+  Otherwise it writes WebP copies at the widths below into site/img/photos/
+  (only the ones that don't exist yet; sharp writes no metadata), deletes
+  copies of photos that are gone, and rewrites the gallery between the
   <!-- gallery --> markers in site/photos/index.html, newest first.
-
-  It lists the photos with no location at the end of each run.
 
   A changed photo that keeps its file name keeps its old WebPs; delete
   site/img/photos/<name>-*.webp first to regenerate them.
@@ -23,10 +27,11 @@ import { join, parse, dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import sharp from "sharp";
 import { ExifTool } from "exiftool-vendored";
+import { MONTHS, altText, defaultPhotosDir, missingMeta, photoDate, place, shownTitle } from "./gallery-meta.mjs";
 
 const here = dirname(fileURLToPath(import.meta.url));
 const root = resolve(here, "..");
-const SOURCE = join(root, "photos");
+const SOURCE = process.env.PHOTOS_DIR || defaultPhotosDir();
 const OUT = join(root, "site/img/photos");
 const PAGE = join(root, "site/photos/index.html");
 const WIDTHS = [256, 480, 691, 936, 1150, 1382, 1640, 1850, 2048];
@@ -36,61 +41,75 @@ const sizes = (ratio) => {
   const phone = r * ROW.small;
   return `(min-width: ${ROW.to}px) ${Math.round(r * ROW.wide)}px, (min-width: ${ROW.from}px) ${(r * ROW.vw).toFixed(1)}vw, ${phone > 340 ? "100vw" : `${Math.round(phone)}px`}`;
 };
-const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];
-
-const place = (tags) => {
-  const city = tags.City;
-  const state = tags.State || tags["Province-State"];
-  const country = tags.Country || tags["Country-PrimaryLocationName"];
-  const venue = tags.Location || tags["Sub-location"]; // Lightroom's Sublocation
-  return [venue, city, state || (city ? country : ""), state || city ? "" : country].filter(Boolean).join(", ").replace(/'/g, "\u2019");
-};
 
 const esc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
 
+if (!existsSync(SOURCE)) {
+  console.error(`photos: no export folder at ${SOURCE}; export the Website collection from Lightroom there, or set PHOTOS_DIR. Nothing changed.`);
+  process.exit(1);
+}
+const html = readFileSync(PAGE, "utf8");
+const re = /(<!-- gallery -->)[\s\S]*?(\n\s*<!-- \/gallery -->)/;
+if (!re.test(html)) {
+  console.error("photos: site/photos/index.html is missing the <!-- gallery --> ... <!-- /gallery --> markers; nothing changed");
+  process.exit(1);
+}
+const files = readdirSync(SOURCE).filter((f) => /\.(jpe?g|png|webp)$/i.test(f)).sort();
+if (!files.length) {
+  console.error(`photos: no photos found in ${SOURCE}; nothing changed`);
+  process.exit(1);
+}
+
 const exiftool = new ExifTool();
 const photos = [];
+const problems = [];
 try {
-  for (const file of readdirSync(SOURCE).filter((f) => /\.(jpe?g|png|webp)$/i.test(f)).sort()) {
+  for (const file of files) {
     const path = join(SOURCE, file);
-    const name = parse(file).name;
-    let tags = {};
+    let tags;
     try {
       tags = await exiftool.read(path);
     } catch (err) {
-      console.error(`Error reading metadata for ${file}:`, err);
+      problems.push(`${file}: couldn't read its metadata (${err.message})`);
+      continue;
     }
-    const meta = await sharp(path).metadata();
-    const [width, height] = (meta.orientation ?? 1) >= 5 ? [meta.height, meta.width] : [meta.width, meta.height];
-    const widths = WIDTHS.filter((w) => w <= width);
-    if (widths.length < WIDTHS.length && !widths.includes(width)) widths.push(width);
-    mkdirSync(OUT, { recursive: true });
-    for (const w of widths) {
-      const out = join(OUT, `${name}-${w}.webp`);
-      if (existsSync(out)) continue;
-      await sharp(path).rotate().resize({ width: w }).webp().toFile(out);
-      console.log(`wrote img/photos/${name}-${w}.webp`);
-    }
-    photos.push({
-      name,
-      widths,
-      width,
-      height,
-      title: tags.Title || "Untitled",
-      shown: (tags.Title || "").replace(/\s+\d+$/, "").replace(/'/g, "\u2019"),
-      month: tags.CreateDate?.year ? `${MONTHS[tags.CreateDate.month - 1]} ${tags.CreateDate.year}` : "",
-      date: tags.CreateDate || "Unknown date",
-      alt: tags.Description || "",
+    const date = photoDate(tags);
+    const photo = {
+      file,
+      path,
+      name: parse(file).name,
+      title: String(tags.Title ?? "").trim(),
+      shown: shownTitle(tags.Title),
+      month: date?.year ? `${MONTHS[date.month - 1]} ${date.year}` : "",
+      date: date || "Unknown date",
+      alt: altText(tags),
       place: place(tags),
-    });
+    };
+    const missing = missingMeta(photo);
+    if (missing.length) problems.push(`${file}: no ${missing.join(", ")}`);
+    photos.push(photo);
   }
 } finally {
   await exiftool.end();
 }
 
-if (!photos.length) {
-  console.error("photos: no photos found in photos/; nothing changed");
+if (problems.length) {
+  console.error(`photos: fix these in Lightroom (Title, Alt Text, and Sublocation or City), export again, and rerun. Nothing changed.\n  ${problems.join("\n  ")}`);
   process.exit(1);
+}
+
+mkdirSync(OUT, { recursive: true });
+for (const p of photos) {
+  const meta = await sharp(p.path).metadata();
+  [p.width, p.height] = (meta.orientation ?? 1) >= 5 ? [meta.height, meta.width] : [meta.width, meta.height];
+  p.widths = WIDTHS.filter((w) => w <= p.width);
+  if (p.widths.length < WIDTHS.length && !p.widths.includes(p.width)) p.widths.push(p.width);
+  for (const w of p.widths) {
+    const out = join(OUT, `${p.name}-${w}.webp`);
+    if (existsSync(out)) continue;
+    await sharp(p.path).rotate().resize({ width: w }).webp().toFile(out);
+    console.log(`wrote img/photos/${p.name}-${w}.webp`);
+  }
 }
 
 photos.sort((a, b) => {
@@ -113,13 +132,8 @@ const img = (p, i) => {
   const priority = i === 0 ? ' loading="eager" decoding="async" fetchpriority="high"' : ' loading="lazy" decoding="async"';
   const info = `<span class="thumb-info"><span class="thumb-title">${esc(p.shown)}</span>${p.place ? `<span class="thumb-place">${esc(p.place)}</span>` : ""}${p.month ? `<span class="thumb-date">${p.month}</span>` : ""}</span>`;
   const ratio = +(p.width / p.height).toFixed(3);
-  return `      <li style="--r: ${ratio}"><a class="thumb" href="${url(p.widths.at(-1))}" data-title="${esc(p.shown)}"${p.place ? ` data-place="${esc(p.place)}"` : ""} data-date="${p.month}"><img src="${url(p.widths[1] ?? p.widths[0])}" srcset="${p.widths.map((w) => `${url(w)} ${w}w`).join(", ")}" sizes="${sizes(ratio)}" alt="${esc(p.alt || p.title)}"${priority} width="${p.width}" height="${p.height}">${info}</a></li>`;
+  return `      <li style="--r: ${ratio}"><a class="thumb" href="${url(p.widths.at(-1))}" data-title="${esc(p.shown)}"${p.place ? ` data-place="${esc(p.place)}"` : ""} data-date="${p.month}"><img src="${url(p.widths[1] ?? p.widths[0])}" srcset="${p.widths.map((w) => `${url(w)} ${w}w`).join(", ")}" sizes="${sizes(ratio)}" alt="${esc(p.alt)}"${priority} width="${p.width}" height="${p.height}">${info}</a></li>`;
 };
 
-const html = readFileSync(PAGE, "utf8");
-const re = /(<!-- gallery -->)[\s\S]*?(\n\s*<!-- \/gallery -->)/;
-if (!re.test(html)) throw new Error("site/photos/index.html: missing the <!-- gallery --> ... <!-- /gallery --> markers");
 writeFileSync(PAGE, html.replace(re, (_, open, close) => `${open}\n${photos.map(img).join("\n")}${close}`));
 console.log(`photos: ${photos.length} photos in the gallery`);
-const unplaced = photos.filter((p) => !p.place);
-if (unplaced.length) console.log(`photos: no location (Sublocation, City, State, Country) on ${unplaced.length}: ${unplaced.map((p) => p.name).join(", ")}`);

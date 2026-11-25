@@ -3,7 +3,7 @@ import assert from "node:assert/strict";
 import { appendFileSync, cpSync, mkdtempSync, readFileSync, rmSync, symlinkSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
-import { check, commentProblems, cssHostProblems, cssProblems, hostProblems, markupProblems, maskProblems, projectLinkProblems, projectListProblems, scriptProblems, skillsProblems } from "../scripts/check.mjs";
+import { check, commentProblems, cssHostProblems, cssProblems, galleryProblems, hostProblems, markupProblems, maskProblems, projectLinkProblems, projectListProblems, scriptProblems, skillsProblems } from "../scripts/check.mjs";
 import { sync } from "../scripts/sync.mjs";
 
 test("cssProblems accepts balanced CSS, including braces in strings and comments", () => {
@@ -365,4 +365,36 @@ test("check wants a canonical link equal to the page's address", () => {
     writeFileSync(page, readFileSync(page, "utf8").replace('href="https://samfeldstein.xyz/code/"', 'href="https://samfeldstein.xyz/"'));
   });
   assert.ok(problems.some((p) => /code\/index\.html: canonical is https:\/\/samfeldstein\.xyz\/, expected https:\/\/samfeldstein\.xyz\/code\//.test(p)), problems.join("\n"));
+});
+
+const galleryItem = ({ title = "Cat", place = "Marfa, TX", alt = "A cat." } = {}) =>
+  `<li style="--r: 1.5"><a class="thumb" href="/img/photos/cat-2048.webp" data-title="${title}"${place === null ? "" : ` data-place="${place}"`} data-date="Jan 2021"><img src="/img/photos/cat-480.webp" alt="${alt}"></a></li>`;
+const gallery = (...items) => `<ul><!-- gallery -->\n${items.join("\n")}\n<!-- /gallery --></ul>`;
+
+test("galleryProblems passes when every photo has a title, location and Alt Text", () => {
+  assert.deepEqual(galleryProblems(gallery(galleryItem(), galleryItem({ title: "Dog" })), { required: true }), []);
+});
+
+test("galleryProblems reports a photo with no title, location or Alt Text", () => {
+  assert.match(galleryProblems(gallery(galleryItem({ title: " " })))[0], /no title/);
+  assert.match(galleryProblems(gallery(galleryItem({ place: null })))[0], /no location/);
+  assert.match(galleryProblems(gallery(galleryItem({ alt: "" })))[0], /no Alt Text/);
+});
+
+test("galleryProblems fails on an empty gallery, and on missing markers only where the gallery is required", () => {
+  assert.deepEqual(galleryProblems(gallery()), ["the gallery has no photos"]);
+  assert.match(galleryProblems("<ul></ul>", { required: true })[0], /missing the <!-- gallery -->/);
+  assert.deepEqual(galleryProblems("<ul></ul>"), []);
+});
+
+test("check fails when the photos page loses its gallery markers", () => {
+  const dir = copyOfSite();
+  try {
+    const page = join(dir, "site/photos/index.html");
+    writeFileSync(page, readFileSync(page, "utf8").replace("<!-- gallery -->", "").replace("<!-- /gallery -->", ""));
+    const problems = check({ root: join(dir, "site"), shared: join(dir, "shared") });
+    assert.ok(problems.some((p) => /photos\/index\.html: missing the <!-- gallery -->/.test(p)), problems.join("\n"));
+  } finally {
+    rmSync(dir, { recursive: true, force: true });
+  }
 });
