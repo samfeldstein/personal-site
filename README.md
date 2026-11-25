@@ -45,7 +45,7 @@ The Code page lists my public GitHub repositories. [scripts/projects.mjs](script
 
 ### Photo gallery
 
-The Photography page is built from whatever images are in `photos/`. [scripts/photos.mjs](scripts/photos.mjs) reads each photo’s title, description, date, and location with ExifTool, writes WebP copies at several widths into `site/img/photos/`, and rewrites the gallery, newest first. The description becomes the alt text, so I caption a photo once in my editor and it carries through to the site. The location (city, state, country) shows when a photo has one, and the script lists the photos that don’t.
+The Photography page is built from what I export from Lightroom. The exports stay outside this repo, and [scripts/photos.mjs](scripts/photos.mjs) reads each photo’s title, alt text, date, and location with ExifTool, writes WebP copies at several widths into `site/img/photos/`, and rewrites the gallery, newest first. I write alt text once in Lightroom and it carries through to the site, while captions stay private. If a photo is missing a title, alt text, or location, the script stops and lists it.
 
 The gallery is a justified mosaic: each row fills the width at one height, and every photo keeps its own shape. Hovering or focusing a photo shows its title, location, and date. Clicking opens it full screen in a `<dialog>`, with arrow keys to move through photos and Escape to close. Without JavaScript, each photo is still a plain link to the full image.
 
@@ -70,9 +70,8 @@ The colophon shows the site’s own Lighthouse scores. I run Lighthouse (mobile)
 ├── scripts/            sync.mjs (writes shared parts into pages, inlines CSS, writes sitemaps),
 │                       check.mjs (fails on drift, broken links, uncovered characters, size),
 │                       projects.mjs + projects.json (the Code page's project list and approved names),
-│                       photos.mjs (builds the gallery from photos/), lighthouse.mjs (writes the scores)
+│                       photos.mjs (builds the gallery from my Lightroom exports), lighthouse.mjs (writes the scores)
 ├── test/               Tests for the scripts and checks
-├── photos/             Source photos (not deployed)
 ├── shared/             Head, running head, end matter, scores, copyright, facts.json, css/
 ├── docs/               Handoff, plan, report, ISSUES.md, ROADMAP.md, backup script
 ├── _archive/           Pages taken off the site but kept (résumés)
@@ -99,7 +98,7 @@ Before committing:
 node scripts/sync.mjs && node scripts/check.mjs && node --test test/*.test.mjs
 ```
 
-After adding, removing, or re-captioning photos:
+After exporting from Lightroom:
 
 ```bash
 node scripts/photos.mjs
