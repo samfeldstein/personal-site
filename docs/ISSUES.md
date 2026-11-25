@@ -36,6 +36,7 @@ Known problems and small cleanups found during a site review on 2026-10-13, upda
 ## From the October 2026 audits (owner)
 
 - [ ] **GitHub repo description.** personal-site says "built with Astro"; update it on GitHub (the lowercase "rss" in rss-feeds stays). (Renamed to personal-site, shown as "Personal Site".)
+- [ ] **Private captions** (Sam, 2026-11-25; next task, plan in `docs/handoff.md`): captions stay private in Lightroom; the site's alt text comes from Lightroom's Alt Text field. Claude drafts alt text from the captions and flags personal ones; the JPGs in `photos/` lose their captions before commit.
 - [ ] **Automated photo metadata check** (Sam, 2026-11-25): the repo's tests fail when a photo has no Title, Description (alt text), or location. Not built; it needs a design that works in the Cloudflare build (photos.mjs's ExifTool is a dependency the tests don't have; checking the generated gallery HTML may be enough).
 - [ ] **Photo alt-text typos** (EXIF Description, then `node scripts/photos.mjs`): "it's head", "A group a people", "ocototillo with a mountains", "Robert's Western world", "Arches National Monument" (a National Park); two Barksdale's photos share the same alt text.
 - [ ] **Presswork's structured data** names its founder as a bare Person; link it to `https://samfeldstein.xyz/#person` in the presswork repo.

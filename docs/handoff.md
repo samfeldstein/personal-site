@@ -1,8 +1,22 @@
 # Handoff
 
-## Next (2026-11-19, orchestrator wrap-up; all pushed and live)
+## Next (2026-11-25, planner session wrap-up; not pushed)
 
-- Nothing is queued for Claude. The open items below (photo captions, GitHub repo description for personal-site, optional follow-ups) are older and mostly wait on Sam.
+**Claude next: private captions, Alt Text for the site** (Sam, 2026-11-25; `docs/ISSUES.md`, "Private captions"). Lightroom Classic is the source of truth. Steps, each needing Sam where marked:
+1. Read every photo's caption from the exported JPGs in `photos/`. Draft alt text: a plain description stays as is; a caption that seems personal (names, memories, private notes) is flagged with a plain description drafted from the image. Sam reviews only the flagged ones.
+2. Get the alt text into Lightroom's Alt Text field: Sam saves metadata to files (Cmd+S) on the Website collection; Claude backs up the originals' `.xmp` sidecars and writes Alt Text (XMP-iptcCore:AltTextAccessibility) into them with ExifTool; Sam runs Metadata > Read Metadata from Files. **Needs Sam:** where the originals live (folder path), still unanswered. Anything Sam edits in Lightroom between Cmd+S and the read-back is lost.
+3. `scripts/photos.mjs` reads alt from AltTextAccessibility instead of Description, and strips the caption (Description, Caption-Abstract, ImageDescription) from each JPG in `photos/` before commit, since those JPGs are committed to GitHub (whether the repo is public is unchecked). WebPs already carry no metadata (sharp strips it).
+4. The automated photo metadata check (ISSUES) fits here: fail when a photo has no Title, alt text, or location.
+5. Locations: 57 photos still have none (list from a one-off scan, 2026-11-25; only joni.jpg has GPS). Claude drafts them grouped by capture date (same day as a located photo, probably same place) and from the image and title; Sam confirms; they go in the same sidecar write as the alt text.
+Then Sam exports the Website collection over `photos/` once; run the held changes below and `photos.mjs`, sync, check, tests, commit.
+
+**Held changes (Sam approved each, 2026-11-24/25, from the photo walk-through; not applied):** delete the 10 résumé PDFs in `site/static/resumes/` and their links/`_headers` entries, update both ISSUES PDF items; set the GitHub repo description to exactly "My personal site. Plain HTML, CSS, and JavaScript, hosted on Cloudflare." (`gh repo edit`), tick ISSUES; Presswork roadmap item "Review Presswork's structured data" (its `site/index.html` names the founder as a bare Person; should be `{"@id": "https://samfeldstein.xyz/#person"}`), point the ISSUES item at it; delete `photos/arches-national-monument.jpg` and drop its alt-text typo from ISSUES.
+
+**Uncommitted in `photos/` (Sam said leave them):** 84 re-exported JPGs, `IMG_5122.jpg` deleted (staged), `mammoth-for-bush.jpg` (its replacement, with title and location) and `joni-3.jpg` (new; Sam wants it on the site) untracked. The gallery isn't rebuilt yet.
+
+**Done 2026-11-24/25:** the gallery's location line now starts with Lightroom's Sublocation ("Fillmore Auditorium, Denver, CO"; 3d4de3a4), confirmed against a real Lightroom export.
+
+- Optional, owner's call: retake ReGreen's screenshot by hand at 1920×1080 so its scale matches the others (it's 16:9 already, so it lines up).
 - Optional, owner's call: retake ReGreen's screenshot by hand at 1920×1080 so its scale matches the others (it's 16:9 already, so it lines up).
 
 ## 2026-11-19 (orchestrator)
