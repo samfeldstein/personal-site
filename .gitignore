@@ -38,3 +38,6 @@ site/version.txt
 # Lighthouse reports
 *.report.html
 *.report.json
+
+# Lightroom exports live outside the repo (~/Pictures/lightroom-photos/website-export); never commit them here
+/photos/

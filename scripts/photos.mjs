@@ -94,7 +94,7 @@ try {
 }
 
 if (problems.length) {
-  console.error(`photos: fix these in Lightroom (Title, Alt Text, and Sublocation or City), export again, and rerun. Nothing changed.\n  ${problems.join("\n  ")}`);
+  console.error(`photos: fix these in Lightroom (Title, Alt Text, and a location: Sublocation, City, State, or Country), export again, and rerun. Nothing changed.\n  ${problems.join("\n  ")}`);
   process.exit(1);
 }
 
